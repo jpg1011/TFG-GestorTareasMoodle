@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   http: ^1.2.2
-  gantt_chart: ^0.3.0
+  material_charts: ^0.0.26
 
 dev_dependencies:
   flutter_test:
