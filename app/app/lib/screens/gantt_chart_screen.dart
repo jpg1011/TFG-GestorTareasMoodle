@@ -2,7 +2,7 @@ import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
 import 'package:flutter/material.dart';
-import 'package:gantt_chart/gantt_chart.dart';
+import 'package:material_charts/material_charts.dart';
 import 'package:app/models/user_model.dart';
 
 class GanttChartScreen extends StatefulWidget {
@@ -281,22 +281,22 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     return orderCourses;
   }
 
-  GanttAbsoluteEvent getGanttEvent(dynamic event) {
+  GanttData getGanttEvent(dynamic event) {
     if (event.runtimeType == Assign && selectTask) {
-      return GanttAbsoluteEvent(
-        displayName: event.name,
+      return GanttData(
+        label: event.name,
         startDate: DateTime.fromMillisecondsSinceEpoch(
             event.allowsubmissionsfromdate * 1000),
         endDate: DateTime.fromMillisecondsSinceEpoch(event.duedate * 1000),
       );
     } else if (event.runtimeType == Quiz && selectQuiz) {
-      return GanttAbsoluteEvent(
-          displayName: event.name,
+      return GanttData(
+          label: event.name,
           startDate: DateTime.fromMillisecondsSinceEpoch(event.timeopen * 1000),
           endDate: DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000));
     }
-    return GanttAbsoluteEvent(
-        displayName: 'No hay eventos',
+    return GanttData(
+        label: 'No hay eventos',
         startDate: DateTime.now(),
         endDate: DateTime.now());
   }
@@ -334,15 +334,24 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                 ],
               ),
             ),
-            GanttChartView(
-              startOfTheWeek: WeekDay.monday,
-              weekEnds: const {WeekDay.saturday, WeekDay.sunday},
-              startDate: DateTime(2025, 1, 30),
-              events: _events.isEmpty
-                  ? []
-                  : _events.map((event) {
-                      return getGanttEvent(event);
-                    }).toList(),
+            MaterialGanttChart(
+              style: const GanttChartStyle(
+                pointRadius: 6.0,
+                showConnections: false
+              ),
+              height: 600,
+              width:MediaQuery.of(context).size.width,
+              data: _events.isNotEmpty
+                  ? _events.map((event){
+                    return getGanttEvent(event);
+                  }).toList()
+                  : [
+                    GanttData(
+                      startDate: DateTime.now(), 
+                      endDate: DateTime.now(), 
+                      label: 'No hay tareas pendientes'
+                    )
+                  ]
             ),
           ],
         ),
