@@ -16,6 +16,7 @@ class GanttChartScreen extends StatefulWidget {
 
 class _GanttChartScreenState extends State<GanttChartScreen> {
   List<dynamic> _events = [];
+  List<Courses> selectedCourses = [];
   bool selectTask = false;
   bool selectQuiz = false;
 
@@ -56,104 +57,228 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     selectQuiz = true;
   }
 
-  Future<void> _showFilterMenu(BuildContext context) async {
-    final List<dynamic> types = [Assign, Quiz];
-
-    final List<Courses>? selectedCourses =
-        await showModalBottomSheet<List<Courses>>(
-            context: context,
-            builder: (BuildContext context) {
-              List<Courses> coursesToFilter = [];
-              return StatefulBuilder(builder: (BuildContext context, setState) {
-                return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+  _openFilterDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                const Text(
+                  'Aañdir filtros',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  textAlign: TextAlign.center,
+                ),
+                const Spacer(),
+                TextButton(
+                    style: const ButtonStyle(
+                        overlayColor: WidgetStatePropertyAll(Colors.white)),
+                    onPressed: () {
+                      setState(() {
+                        _clear();
+                      });
+                    },
+                    child: const Text(
+                      'Borrar',
+                      style: TextStyle(color: Colors.blue),
+                    ))
+              ],
+            ),
+            backgroundColor: Colors.white,
+            elevation: 3.0,
+            content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  {'name': 'Cursos', 'function': _openCoursesFilter},
+                  {'name': 'Tareas', 'function': _openTypesFilter}
+                ].map((element) {
+                  return Row(
                     children: [
-                      const Text(
-                        'Filtrar diagrama',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        alignment: WrapAlignment.spaceEvenly,
-                        spacing: 5.0,
-                        children: [
-                          ...widget.user.userCourses!.map((course) {
+                      Expanded(
+                          child: TextButton(
+                              style: ButtonStyle(
+                                  overlayColor:
+                                      WidgetStatePropertyAll(Colors.grey[100])),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Future.delayed(Duration.zero, () {
+                                  (element['function'] as VoidCallback).call();
+                                });
+                              },
+                              child: Row(
+                                children: [
+                                  Text(
+                                    element['name'] as String,
+                                    style: const TextStyle(color: Colors.black),
+                                  ),
+                                  const Spacer(),
+                                  const Icon(
+                                    Icons.keyboard_arrow_right,
+                                    color: Colors.black,
+                                  )
+                                ],
+                              )))
+                    ],
+                  );
+                }).toList()),
+          );
+        });
+  }
+
+  _openCoursesFilter() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _openFilterDialog();
+                        },
+                        icon: const Icon(Icons.arrow_back)),
+                    const Text(
+                      'Seleccionar cursos',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16.0),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+                backgroundColor: Colors.white,
+                elevation: 3.0,
+                content: widget.user.userCourses!.isEmpty
+                    ? const Text('No hay cursos para filtrar')
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _reorderCourses(widget.user.userCourses!)
+                              .map((course) {
                             return FilterChip(
-                                label: Text(course.shortname),
-                                selected: coursesToFilter.contains(course),
-                                onSelected: (bool selected) {
+                                checkmarkColor: Colors.white,
+                                backgroundColor: Colors.white,
+                                side: BorderSide.none,
+                                label: !selectedCourses.contains(course)
+                                    ? Text(course.fullname,
+                                        style: const TextStyle(
+                                            color: Colors.black))
+                                    : Text(course.fullname,
+                                        style: const TextStyle(
+                                            color: Colors.white)),
+                                selected: selectedCourses.contains(course),
+                                selectedColor: Colors.blue,
+                                onSelected: (selected) {
                                   setState(() {
                                     if (selected) {
-                                      coursesToFilter.add(course);
+                                      selectedCourses.add(course);
                                     } else {
-                                      coursesToFilter.remove(course);
+                                      selectedCourses.remove(course);
                                     }
+                                    _events = getEvents(selectedCourses);
                                   });
+                                  setDialogState(() {});
                                 });
-                          })
-                        ],
-                      ),
-                      const SizedBox(height: 10.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          FilterChip(
-                            label: const Text('Tareas'),
-                            selected: selectTask,
-                            onSelected: (bool value) {
-                              setState(
-                                () {
-                                  if (value) {
-                                    selectTask = value;
-                                  } else {
-                                    selectTask = false;
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                          FilterChip(
-                            label: const Text('Cuestionarios'),
-                            selected: selectQuiz,
-                            onSelected: (bool value) {
-                              setState(
-                                () {
-                                  if (value) {
-                                    selectQuiz = value;
-                                  } else {
-                                    selectQuiz = false;
-                                  }
-                                },
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancelar')),
-                          ElevatedButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, coursesToFilter),
-                              child: const Text('Aceptar'))
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              });
-            });
+                          }).toList(),
+                        ),
+                      ));
+          },
+        );
+      },
+    );
+  }
 
-    if (selectedCourses != null) {
-      setState(() {
-        _events = getEvents(selectedCourses);
-      });
-    }
+  _openTypesFilter() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _openFilterDialog();
+                        },
+                        icon: const Icon(Icons.arrow_back)),
+                    const Text(
+                      'Seleccionar tipo',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16.0),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: selectTask ? Colors.blue : Colors.white,
+                        border: Border.all(color: Colors.blue),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: IconButton(
+                        hoverColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onPressed: () {
+                          setState(() {
+                            selectTask = !selectTask;
+                            _events = getEvents(selectedCourses);
+                          });
+                          setDialogState(() {});
+                        },
+                        icon: Icon(
+                          Icons.task,
+                          color: selectTask ? Colors.white : Colors.blue,
+                          size: 42,
+                        ),
+                        isSelected: selectTask,
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue),
+                        borderRadius: BorderRadius.circular(10),
+                        color: selectQuiz ? Colors.blue : Colors.white,
+                      ),
+                      child: IconButton(
+                        hoverColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        icon: Icon(
+                          Icons.fact_check,
+                          color: selectQuiz ? Colors.white : Colors.blue,
+                          size: 42,
+                        ),
+                        isSelected: selectQuiz,
+                        onPressed: () {
+                          setState(() {
+                            selectQuiz = !selectQuiz;
+                            _events = getEvents(selectedCourses);
+                          });
+                          setDialogState(() {});
+                        },
+                      ),
+                    )
+                  ],
+                ),
+                backgroundColor: Colors.white,
+              );
+            },
+          );
+        });
+  }
+
+  List<Courses> _reorderCourses(List<Courses> coursesToOrder) {
+    List<Courses> orderCourses = coursesToOrder;
+    orderCourses.sort((a, b) => a.fullname.compareTo(b.fullname));
+
+    return orderCourses;
   }
 
   GanttAbsoluteEvent getGanttEvent(dynamic event) {
@@ -168,14 +293,19 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
       return GanttAbsoluteEvent(
           displayName: event.name,
           startDate: DateTime.fromMillisecondsSinceEpoch(event.timeopen * 1000),
-          endDate: DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000)
-      );
+          endDate: DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000));
     }
     return GanttAbsoluteEvent(
         displayName: 'No hay eventos',
         startDate: DateTime.now(),
-        endDate: DateTime.now()
-    );
+        endDate: DateTime.now());
+  }
+
+  _clear() {
+    _events = getEvents([]);
+    selectedCourses = [];
+    selectTask = true;
+    selectQuiz = true;
   }
 
   @override
@@ -196,18 +326,17 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        _showFilterMenu(context);
+                        _openFilterDialog();
                       },
-                      style: ButtonStyle(
-                          backgroundColor:
-                              WidgetStatePropertyAll(Colors.cyan[100])),
+                      style: const ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
                       child: const Icon(Icons.filter_list, color: Colors.white))
                 ],
               ),
             ),
             GanttChartView(
               startOfTheWeek: WeekDay.monday,
-              weekEnds: {WeekDay.saturday, WeekDay.sunday},
+              weekEnds: const {WeekDay.saturday, WeekDay.sunday},
               startDate: DateTime(2025, 1, 30),
               events: _events.isEmpty
                   ? []
