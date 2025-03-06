@@ -4,13 +4,20 @@ import 'package:app/models/quiz.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:app/utils/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MoodleApiService {
   static String? _token;
   static String? _username;
 
+  static Future<String> getMoodleURL() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('moodleConection') ?? '';
+  }
+
   static Future<bool> login(String username, String password) async {
-    final uri = Uri.parse('$MOODLE_URL/login/token.php');
+    final moodleURL = await getMoodleURL();
+    final uri = Uri.parse('$moodleURL/login/token.php');
 
     try {
       final response = await http.post(
@@ -36,7 +43,8 @@ class MoodleApiService {
   }
 
   static Future<Map<String, dynamic>> getUserInfo() async {
-    final url = Uri.parse('$MOODLE_URL/webservice/rest/server.php');
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
     try {
       final response = await http.post(url, body: {
         'wsfunction': WS_GET_USER_INFO,
@@ -63,9 +71,9 @@ class MoodleApiService {
   }
 
   static Future<List<Courses>> getUserCourses(int userid) async {
-    final url = Uri.parse('$MOODLE_URL/webservice/rest/server.php');
-    print('$userid');
-    print('${userid.runtimeType}');
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
+
     try {
       final response = await http.post(url, body: {
         'wsfunction': WS_GET_USER_COURSES,
@@ -88,13 +96,13 @@ class MoodleApiService {
         throw Exception('No response');
       }
     } catch (e) {
-      print('${e.toString()}');
       throw Exception('Fatal error');
     }
   }
 
   static Future<List<Assign>> getCourseAssignments(int courseid) async {
-    final url = Uri.parse('$MOODLE_URL/webservice/rest/server.php');
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
     try {
       final response = await http.post(url, body: {
         'wsfunction': WS_GET_COURSE_ASSIGN,
@@ -124,7 +132,8 @@ class MoodleApiService {
   }
 
   static Future<List<Quiz>> getCourseQuizzes(int courseid) async {
-    final url = Uri.parse('$MOODLE_URL/webservice/rest/server.php');
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
     try {
       final response = await http.post(url, body: {
         'wsfunction': WS_GET_COURSE_QUIZ,
