@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:app/models/user_model.dart';
 import 'package:app/screens/home_screen.dart';
 import 'package:app/services/moodle_api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +14,62 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  TextEditingController _URLMoodle = TextEditingController();
+
+  Future<void> saveMoodle() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('moodleConection', _URLMoodle.text);
+  }
+
+  _openURLDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            title: const Text(
+              'Conectar a Moodle',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20.0),
+            ),
+            content: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _URLMoodle,
+                    cursorColor: Colors.black,
+                    decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.school_outlined),
+                        hintText: 'URL Moodle',
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0))),
+                        focusedBorder: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.black)),
+                        focusColor: Colors.blue,
+                        suffixIcon: TextButton(
+                            style: const ButtonStyle(
+                                backgroundColor:
+                                    WidgetStatePropertyAll(Colors.transparent),
+                                overlayColor: WidgetStatePropertyAll(Color(0xFFF4F4F4)),
+                            ),
+                            onPressed: () {
+                              saveMoodle();
+                            },
+                            child: const Text(
+                              'Conectar',
+                              style: TextStyle(color: Colors.black),
+                            ))),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +77,21 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFF4F4F4),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: IconButton(
+                    hoverColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onPressed: () {
+                      _openURLDialog();
+                    },
+                    icon: const Icon(Icons.school)),
+              )
+            ],
+          ),
           Expanded(
             flex: 3,
             child: Column(
