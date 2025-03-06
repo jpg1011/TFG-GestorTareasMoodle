@@ -1,10 +1,4 @@
 /*
-  Name: MOODLE_URL
-  Description: URL of the Moodle server
-*/
-const String MOODLE_URL = 'https://school.moodledemo.net';
-
-/*
   Name: MOODLE_SERVICE_NAME
   Description: URL of the Moodle server
 */
