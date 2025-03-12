@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   TextEditingController _URLMoodle = TextEditingController();
+  bool viewPassword = true;
 
   Future<void> saveMoodle() async {
     final prefs = await SharedPreferences.getInstance();
@@ -60,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               saveMoodle();
                             },
                             child: const Text(
-                              'Conectar',
+                              'Guardar',
                               style: TextStyle(color: Colors.black),
                             ))),
                   ),
@@ -143,9 +144,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   TextField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: viewPassword,
                     decoration: InputDecoration(
                       hintText: 'Contraseña',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.fromLTRB(0.0, 0.0, 8.0, 0.0),
+                        child: IconButton(
+                          onPressed: (){
+                            setState(() {
+                              viewPassword = !viewPassword;
+                            });
+                          }, 
+                          icon:  Icon(viewPassword ? Icons.visibility : Icons.visibility_off)
+                        ),
+                      ),
                       filled: true,
                       fillColor: Colors.grey[200],
                       contentPadding: const EdgeInsets.symmetric(
