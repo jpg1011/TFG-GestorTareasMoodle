@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:app/screens/gantt_chart/src/models.dart';
 import 'package:app/screens/gantt_chart/src/painter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 /// A customizable Gantt Chart widget that displays tasks over a timeline.
 ///
@@ -50,9 +51,6 @@ class MaterialGanttChart extends StatefulWidget {
     this.onPointHover,
     this.onAnimationComplete,
   }) {
-    if (data.isEmpty) {
-      throw GanttChartException('Gantt data cannot be empty');
-    }
     if (width <= 0 || height <= 0) {
       throw GanttChartException('Width and height must be positive values');
     }
@@ -72,6 +70,7 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
   void initState() {
     super.initState();
     _setupAnimation(); // Initialize animation setup
+    initializeDateFormatting('es', null);
   }
 
   /// Sets up the animation controller and the tween animation.
@@ -138,7 +137,7 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                 onExit: (_) => _handleHover(false, point, index),
                 child: Tooltip(
                   message:
-                      '${DateFormat.yMMMd().format(point.startDate)} - ${DateFormat.yMMMd().format(point.endDate)}', // Tooltip message
+                      '${DateFormat('dd/MM/y', 'es').format(point.startDate)} - ${DateFormat('dd/MM/y', 'es').format(point.endDate)}', // Tooltip message
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -229,27 +228,32 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                     if (point.icon != null)
                       Icon(point.icon, color: point.color ?? Colors.blue),
                     const SizedBox(width: 8),
-                    Text(
-                      point.label,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        overflow: TextOverflow.ellipsis,
+                        point.label,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 16),
-                Text(
-                  '${DateFormat.yMMMMd().format(point.startDate)} - ${DateFormat.yMMMMd().format(point.endDate)}', // Date range for the task
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                if (point.description != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    point.description!, // Task description
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                if (point.description != null) ...[ // Task description
+                  Text(point.description!, ),
                 ],
+                const SizedBox(height: 8),
+                RichText(
+                  text: TextSpan(children: [
+                    const TextSpan(text: 'Apertura: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.startDate)}\n'),
+                    const TextSpan(text: 'Cierre: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.endDate)}\n')
+                  ]),
+                ),
                 if (point.tapContent != null) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -261,9 +265,12 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
+                    style: const ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(Colors.blue)
+                    ),
                     onPressed: () =>
                         Navigator.of(context).pop(), // Close dialog
-                    child: const Text('Close'),
+                    child: const Text('Cerrar', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
