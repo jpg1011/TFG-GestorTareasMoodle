@@ -12,7 +12,7 @@ class MoodleApiService {
 
   static Future<String> getMoodleURL() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('moodleConection') ?? '';
+    return prefs.getString('moodleConection') ?? 'URL Moodle';
   }
 
   static Future<bool> login(String username, String password) async {
@@ -65,7 +65,6 @@ class MoodleApiService {
         throw Exception('Error statusCode');
       }
     } catch (e) {
-      print('${e.toString()}');
       throw Exception();
     }
   }
