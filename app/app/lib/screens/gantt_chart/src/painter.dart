@@ -1,5 +1,5 @@
 import 'dart:ui' as ui;
-
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:app/screens/gantt_chart/src/models.dart';
@@ -64,7 +64,7 @@ class GanttBasePainter extends CustomPainter {
     // Get the overall time range covered by the data
     final timeRange = _getTimeRange();
     final totalDuration = timeRange.end.difference(timeRange.start);
-    const gridCount = 6;
+    const gridCount = 5;
 
     // Draw vertical grid lines and corresponding date labels
     for (int i = 0; i <= gridCount; i++) {
@@ -208,24 +208,36 @@ class GanttBasePainter extends CustomPainter {
       final y =
           chartArea.top + style.timelineYOffset + (i * style.verticalSpacing);
 
+      final leftSpace = x - chartArea.left;
+      final rightSpace = chartArea.right - x;
+      final double availableSpace = 2 * math.min(leftSpace, rightSpace);
+
       // Draw label above the point
       final labelPainter = TextPainter(
-        text: TextSpan(
-          text: point.label,
-          style: style.labelStyle ??
-              TextStyle(
-                color: point.color ?? style.pointColor,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        textDirection: ui.TextDirection.ltr,
-      )..layout();
+          text: TextSpan(
+            text: point.label,
+            style: style.labelStyle ??
+                TextStyle(
+                  color: point.color ?? style.pointColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          textDirection: ui.TextDirection.ltr,
+          maxLines: 1,
+          ellipsis: '...')
+        ..layout(maxWidth: availableSpace);
+
+      double labelX = x - (labelPainter.width / 2);
+      if (labelX < chartArea.left) {
+        labelX = chartArea.left;
+      } else if (labelX + labelPainter.width > chartArea.right) {
+        labelX = chartArea.right - labelPainter.width;
+      }
 
       labelPainter.paint(
         canvas,
-        Offset(x - (labelPainter.width / 2),
-            y - style.labelOffset - labelPainter.height),
+        Offset(labelX, y - style.labelOffset - labelPainter.height),
       );
     }
   }
@@ -239,13 +251,18 @@ class GanttBasePainter extends CustomPainter {
     DateTime? latest;
 
     // Determine the earliest start date and latest end date
-    for (final point in data) {
-      if (earliest == null || point.startDate.isBefore(earliest)) {
-        earliest = point.startDate;
+    if (data.isNotEmpty) {
+      for (final point in data) {
+        if (earliest == null || point.startDate.isBefore(earliest)) {
+          earliest = point.startDate;
+        }
+        if (latest == null || point.endDate.isAfter(latest)) {
+          latest = point.endDate;
+        }
       }
-      if (latest == null || point.endDate.isAfter(latest)) {
-        latest = point.endDate;
-      }
+    } else {
+      earliest = DateTime.now();
+      latest = DateTime.now().add(const Duration(days: 365));
     }
 
     // Return a time range with added padding of 7 days
