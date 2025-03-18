@@ -14,22 +14,37 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  TextEditingController _URLMoodle = TextEditingController();
+  final TextEditingController _urlMoodle = TextEditingController();
   bool viewPassword = true;
+  String savedMoodle = 'URL Moodle';
+
+  @override
+  void initState() {
+    super.initState();
+    chargeMoodle();
+  }
+
+  Future<void> chargeMoodle() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedURL = prefs.getString('moodleConection');
+    setState(() {
+      savedMoodle = savedURL ?? 'URL Moodle';
+    });
+  }
 
   Future<void> saveMoodle() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('moodleConection', _URLMoodle.text);
+    await prefs.setString('moodleConection', _urlMoodle.text);
   }
 
-  _openURLDialog() {
+  Future<void> _openURLDialog() {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: Colors.white,
             title: const Text(
-              'Conectar a Moodle',
+              'Guardar Moodle',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20.0),
             ),
@@ -38,32 +53,37 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _URLMoodle,
+                    controller: _urlMoodle,
                     cursorColor: Colors.black,
                     decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.school_outlined),
-                        hintText: 'URL Moodle',
+                        hintText: savedMoodle,
                         border: const OutlineInputBorder(
                             borderRadius:
-                                BorderRadius.all(Radius.circular(10.0))),
+                                BorderRadius.all(Radius.circular(40.0))),
                         focusedBorder: const OutlineInputBorder(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(10.0)),
                             borderSide: BorderSide(color: Colors.black)),
                         focusColor: Colors.blue,
                         suffixIcon: TextButton(
-                            style: const ButtonStyle(
-                                backgroundColor:
-                                    WidgetStatePropertyAll(Colors.transparent),
-                                overlayColor: WidgetStatePropertyAll(Color(0xFFF4F4F4)),
-                            ),
-                            onPressed: () {
-                              saveMoodle();
-                            },
-                            child: const Text(
-                              'Guardar',
-                              style: TextStyle(color: Colors.black),
-                            ))),
+                          style: const ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.transparent),
+                            overlayColor:
+                                WidgetStatePropertyAll(Colors.transparent),
+                          ),
+                          onPressed: () async {
+                            await saveMoodle();
+                            await chargeMoodle();
+                            _urlMoodle.clear();
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            'Guardar',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        )),
                   ),
                 )
               ],
@@ -150,13 +170,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       suffixIcon: Padding(
                         padding: const EdgeInsets.fromLTRB(0.0, 0.0, 8.0, 0.0),
                         child: IconButton(
-                          onPressed: (){
-                            setState(() {
-                              viewPassword = !viewPassword;
-                            });
-                          }, 
-                          icon:  Icon(viewPassword ? Icons.visibility : Icons.visibility_off)
-                        ),
+                            onPressed: () {
+                              setState(() {
+                                viewPassword = !viewPassword;
+                              });
+                            },
+                            icon: Icon(viewPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off)),
                       ),
                       filled: true,
                       fillColor: Colors.grey[200],
