@@ -216,6 +216,7 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.white,
           child: Container(
             padding: const EdgeInsets.all(16),
             width: 400,
@@ -247,11 +248,13 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                 ],
                 const SizedBox(height: 8),
                 RichText(
-                  text: TextSpan(children: [
-                    const TextSpan(text: 'Apertura: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.startDate)}\n'),
-                    const TextSpan(text: 'Cierre: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.endDate)}\n')
+                  text: TextSpan(
+                    style: const TextStyle(color: Colors.black),
+                    children: [
+                      const TextSpan(text: 'Apertura: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.startDate)}\n'),
+                      const TextSpan(text: 'Cierre: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.endDate))
                   ]),
                 ),
                 if (point.tapContent != null) ...[
