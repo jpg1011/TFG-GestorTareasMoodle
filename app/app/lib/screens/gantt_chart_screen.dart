@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
+import 'package:app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/gantt_chart/material_charts.dart';
 import 'package:app/models/user_model.dart';
@@ -436,6 +437,14 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        IconButton(
+                          style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.transparent)),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen(user: widget.user)));
+                          }, 
+                          icon: const Icon(Icons.arrow_back, color: Colors.black)
+                        ),
+                        const Spacer(),
                         ElevatedButton(
                             onPressed: () {
                               _openFilterDialog();
