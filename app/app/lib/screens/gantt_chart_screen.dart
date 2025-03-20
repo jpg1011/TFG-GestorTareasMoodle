@@ -356,9 +356,9 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     if (eventStartDate != 0 && eventEndDate == 0) {
       return DateTime.fromMillisecondsSinceEpoch(eventStartDate * 1000);
     } else if (eventStartDate == 0 && eventEndDate != 0) {
-      return DateTime.now();
+      return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
     } else if (eventStartDate != 0 && eventEndDate != 0) {
-      return DateTime.fromMillisecondsSinceEpoch(eventStartDate * 1000);
+      return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
     } else {
       return DateTime.now();
     }
@@ -376,7 +376,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         startDate: getStartDate(
             eventStartDate: event.allowsubmissionsfromdate,
             eventEndDate: event.duedate),
-        endDate: getStartDate(
+        endDate: getEndDate(
             eventStartDate: event.allowsubmissionsfromdate,
             eventEndDate: event.duedate),
       );
