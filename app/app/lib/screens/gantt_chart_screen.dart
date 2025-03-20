@@ -490,12 +490,27 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                             return SingleChildScrollView(
                               child: Column(
                                 children: _events
-                                    .expand((event) => [
+                                    .expand((event) {
+                                      if (event.runtimeType == Assign &&
+                                          selectTask) {
+                                        return [
                                           const SizedBox(height: 16),
                                           generateCard(
                                               event: event,
                                               width: constraints.maxWidth)
-                                        ])
+                                        ];
+                                      } else if (event.runtimeType == Quiz &&
+                                          selectQuiz) {
+                                        return [
+                                          const SizedBox(height: 16),
+                                          generateCard(
+                                              event: event,
+                                              width: constraints.maxWidth)
+                                        ];
+                                      }
+                                      return [];
+                                    })
+                                    .cast<Widget>()
                                     .toList(),
                               ),
                             );
@@ -616,8 +631,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                   children: [
                     Expanded(
                         child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                          16.0, 0.0, 16.0, 8.0),
+                      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
                       child: Text(
                         widget.user.userCourses!
                             .firstWhere((course) => course.id == event.course)
