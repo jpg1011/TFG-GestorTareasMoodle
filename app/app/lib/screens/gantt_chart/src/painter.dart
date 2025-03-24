@@ -50,6 +50,9 @@ class GanttBasePainter extends CustomPainter {
       _drawConnections(canvas, chartArea);
     }
 
+    // Draw actual date line
+    _drawActualDate(canvas, chartArea);
+
     // Draw task labels above their corresponding timeline
     _drawLabels(canvas, chartArea);
   }
@@ -100,6 +103,43 @@ class GanttBasePainter extends CustomPainter {
         ),
       );
     }
+  }
+
+  void _drawActualDate(Canvas canvas, Rect chartArea) {
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.8)
+      ..strokeWidth = 1.5;
+
+    final timeRange = _getTimeRange();
+    final totalDuration = timeRange.end.difference(timeRange.start);
+    final now = DateTime.now();
+
+    final actualDate = now.difference(timeRange.start).inMilliseconds /
+        totalDuration.inMilliseconds;
+
+    final x = chartArea.left + actualDate * chartArea.width;
+    canvas.drawLine(
+      Offset(x, chartArea.top + style.timelineYOffset - 20),
+      Offset(x, chartArea.bottom),
+      paint,
+    );
+
+    final dateText = TextPainter(
+        text: TextSpan(
+            text:
+                style.dateFormat?.format(now) ?? DateFormat.yMMMd().format(now),
+            style: style.dateStyle ??
+                TextStyle(
+                    fontSize: 10,
+                    color: style.connectionLineColor,
+                    fontWeight: FontWeight.bold)),
+        textDirection: ui.TextDirection.ltr)..layout();
+
+    dateText.paint(
+      canvas, 
+      Offset(x - (dateText.width / 2),
+          chartArea.bottom)
+    );
   }
 
   /// Draws the main timeline for the Gantt chart tasks.
