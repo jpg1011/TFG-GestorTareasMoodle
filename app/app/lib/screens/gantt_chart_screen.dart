@@ -21,8 +21,8 @@ class GanttChartScreen extends StatefulWidget {
 class _GanttChartScreenState extends State<GanttChartScreen> {
   List<dynamic> _events = [];
   List<Courses> selectedCourses = [];
-  bool selectTask = false;
-  bool selectQuiz = false;
+  bool selectTask = true;
+  bool selectQuiz = true;
   Map<int, Color> coursesColors = {};
 
   List<dynamic> getEvents(List<Courses> selectedCourses) {
@@ -34,7 +34,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
             .where((course) => selectedCourses.contains(course));
 
     for (var course in coursesToShow) {
-      if (course.assignments != null) {
+      if (course.assignments != null && selectTask) {
         List<Assign> orderedAssignments =
             reorderAssignments(course.assignments!);
         for (var event in orderedAssignments) {
@@ -45,7 +45,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         }
       }
 
-      if (course.quizzes != null) {
+      if (course.quizzes != null && selectQuiz) {
         List<Quiz> orderedQuizzes = reorderQuizzes(course.quizzes!);
         for (var event in orderedQuizzes) {
           if (event.timeclose * 1000 >= DateTime.now().millisecondsSinceEpoch ||
@@ -60,13 +60,13 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   }
 
   List<Assign> reorderAssignments(List<Assign> listToOrder) {
-    List<Assign> orderedList = [...listToOrder];
+    List<Assign> orderedList = List.from(listToOrder);
     orderedList.sort((a, b) => a.duedate.compareTo(b.duedate));
     return orderedList;
   }
 
   List<Quiz> reorderQuizzes(List<Quiz> listToOrder) {
-    List<Quiz> orderedList = [...listToOrder];
+    List<Quiz> orderedList = List.from(listToOrder);
     orderedList.sort((a, b) => a.timeclose.compareTo(b.timeclose));
     return orderedList;
   }
@@ -299,9 +299,8 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   }
 
   List<Courses> _reorderCourses(List<Courses> coursesToOrder) {
-    List<Courses> orderCourses = coursesToOrder;
+    List<Courses> orderCourses = List.from(coursesToOrder);
     orderCourses.sort((a, b) => a.fullname.compareTo(b.fullname));
-
     return orderCourses;
   }
 
@@ -312,7 +311,6 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
       Colors.blue,
       Colors.orange,
       Colors.purple,
-      Colors.yellow,
       Colors.pink,
       Colors.cyan,
       Colors.lime,
