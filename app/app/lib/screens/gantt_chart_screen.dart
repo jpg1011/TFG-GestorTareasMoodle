@@ -436,12 +436,16 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
-                          style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.transparent)),
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen(user: widget.user)));
-                          }, 
-                          icon: const Icon(Icons.arrow_back, color: Colors.black)
-                        ),
+                            style: const ButtonStyle(
+                                backgroundColor:
+                                    WidgetStatePropertyAll(Colors.transparent)),
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      HomeScreen(user: widget.user)));
+                            },
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.black)),
                         const Spacer(),
                         ElevatedButton(
                             onPressed: () {
@@ -633,6 +637,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
             ),
             const Divider(color: Colors.grey, indent: 20, endIndent: 20),
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   children: [
@@ -672,21 +677,80 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Icon(Icons.event_busy, size: 15),
-                        Text(DateFormat('MMM dd, y  HH:mm', 'es').format(
-                            getStartDate(
-                                eventStartDate: event.runtimeType == Assign
-                                    ? event.allowsubmissionsfromdate
-                                    : event.timeopen,
-                                eventEndDate: event.runtimeType == Assign
-                                    ? event.duedate
-                                    : event.timeclose)))
+                        Text(DateFormat('MMM dd, y  HH:mm', 'es')
+                            .format(
+                                getEndDate(
+                                    eventStartDate: event.runtimeType == Assign
+                                        ? event.allowsubmissionsfromdate
+                                        : event.timeopen,
+                                    eventEndDate: event.runtimeType == Assign
+                                        ? event.duedate
+                                        : event.timeclose)))
                       ],
                     )
                   ],
-                )
+                ),
               ],
             ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.timer_outlined, size: 14),
+                    const SizedBox(width: 5),
+                    Text(_getTimeDifference(
+                        DateTime.now(),
+                        getEndDate(
+                            eventStartDate: event.runtimeType == Assign
+                                ? event.allowsubmissionsfromdate
+                                : event.timeopen,
+                            eventEndDate: event.runtimeType == Assign
+                                ? event.duedate
+                                : event.timeclose)))
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.grade, size: 14),
+                        const SizedBox(width: 5),
+                        Text(_getTaskGrade(event))
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            )
           ]),
         ));
   }
+}
+
+String _getTimeDifference(DateTime now, DateTime eventEnd) {
+  if (now.isBefore(eventEnd)) {
+    Duration difference = eventEnd.difference(now);
+
+    int days = difference.inDays;
+    int hours = difference.inHours % 24;
+    int minutes = difference.inMinutes % 60;
+    return "$days d $hours h $minutes m";
+  }
+  return '--';
+}
+
+String _getTaskGrade(dynamic event) {
+  if(event.runtimeType == Assign){
+    if(event.submission.graded){
+      if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
+        return ((event.submission.grade * 10) / event.grade).toString();
+      } else {
+        return "--";
+      }
+    }
+  }
+  return "--";
 }
