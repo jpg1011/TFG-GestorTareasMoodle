@@ -1,3 +1,5 @@
+import 'package:app/models/submission.dart';
+
 class Assign {
   final int id;
   final int cmid;
@@ -30,6 +32,7 @@ class Assign {
   final int preventsubmissionnotingroup;
   final String? submissionstatement;
   final int? submissionstatementformat;
+  Submission? submission;
 
   Assign(
       {required this.id,
@@ -62,7 +65,8 @@ class Assign {
       required this.requiresubmissionstatement,
       required this.preventsubmissionnotingroup,
       this.submissionstatement,
-      this.submissionstatementformat});
+      this.submissionstatementformat,
+      this.submission});
 
   Assign.fromJson(Map<String, dynamic> json)
       : id = json['id'],
