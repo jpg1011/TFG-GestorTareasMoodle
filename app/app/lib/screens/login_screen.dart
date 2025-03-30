@@ -206,6 +206,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               await MoodleApiService.getCourseAssignments(
                                   course.id);
                           course.assignments = assignments;
+                          for (var assign in course.assignments!) {
+                            assign.submission = await MoodleApiService
+                                .getAssignSubmissionStatus(assign.id);
+                          }
                         }
 
                         for (var course in user.userCourses!) {
