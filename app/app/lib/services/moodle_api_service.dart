@@ -1,6 +1,8 @@
+import 'package:app/app.dart';
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
+import 'package:app/models/submission.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:app/utils/constants.dart';
@@ -157,5 +159,65 @@ class MoodleApiService {
     } catch (e) {
       throw Exception(e);
     }
+  }
+
+  static Future<Submission> getAssignSubmissionStatus(int assignId) async {
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
+
+    try {
+      final response = await http.post(url, body: {
+        'wsfunction': WS_GET_ASSIGN_SUBMISS_STATUS,
+        'moodlewsrestformat': 'json',
+        'wstoken': _token,
+        'assignid': assignId.toString()
+      });
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        Submission submission =
+            Submission(submitted: false, submissionsenabled: false, graded: false, cansubmit: false);
+        if (data['lastattempt'] != null) {
+          if (data['lastattempt']['submission'] != null) {
+            submission = Submission(
+                submitted:
+                    data['lastattempt']['submission']['status'] == 'submitted'
+                        ? true
+                        : false,
+                submissionsenabled: data['lastattempt']['submissionsenabled'],
+                graded: data['lastattempt']['graded'],
+                cansubmit: data['lastattempt']['cansubmit']);
+          } else {
+            submission = Submission(
+                submitted: false,
+                submissionsenabled: data['lastattempt']['submissionsenabled'],
+                graded: data['lastattempt']['graded'],
+                cansubmit: data['lastattempt']['cansubmit']);
+          }
+        }
+        if (data['feedback'] != null) {
+          if (data['feedback']['grade'] != null) {
+            submission.grade = double.parse(data['feedback']['grade']['grade']);
+          } else if (data['feedback']['gradefordisplay'] != null) {
+            String grade = _formatGrade(data['feedback']['gradefordisplay']
+                .toString()
+                .replaceAll('&nbsp;', '')
+                .split('/')
+                .first);
+
+            submission.grade = double.parse(grade);
+          }
+        }
+        return submission;
+      } else {
+        throw Exception('No response');
+      }
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  static _formatGrade(String gradeToFormat) {
+    return gradeToFormat.replaceAll(',', '.');
   }
 }
