@@ -29,10 +29,10 @@ const String WS_GET_ASSIGN_GRADES = 'mod_assign_get_grades';
 const String WS_GET_ASSIGN_SUBMISSIONS = 'mod_assign_get_submissions';
 
 /*
-  Name: WS_GET_USER_SUBMISS_STATUS
-  Description: Get user submission status by assignmentId and userId
+  Name: WS_GET_ASSIGN_SUBMISS_STATUS
+  Description: Get assign submission status
 */
-const String WS_GET_USER_SUBMISS_STATUS = 'mod_assign_get_submission_status';
+const String WS_GET_ASSIGN_SUBMISS_STATUS = 'mod_assign_get_submission_status';
 
 /*
   Name: WS_GET_USER_COURSES
