@@ -1,3 +1,4 @@
+import 'package:app/screens/personal_tasks_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/gantt_chart_screen.dart';
 import 'package:app/models/user_model.dart';
@@ -32,7 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => GanttChartScreen(user: widget.user)));
                 },
-                child: const Text("Tareas Gantt"))
+                child: const Text("Tareas Gantt")),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PersonalTasksScreen(user: widget.user)));
+                },
+                child: const Text("Tareas Personales"))
           ],
         ),
       ),
