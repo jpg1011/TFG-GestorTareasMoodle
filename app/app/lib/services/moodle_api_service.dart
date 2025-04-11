@@ -1,4 +1,3 @@
-import 'package:app/app.dart';
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
