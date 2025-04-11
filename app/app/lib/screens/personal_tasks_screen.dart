@@ -1,8 +1,11 @@
 import 'dart:collection';
-
+import 'dart:ffi';
 import 'package:app/models/courses.dart';
+import 'package:app/models/databases/personaltask_database.dart';
+import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
 import 'package:app/screens/home_screen.dart';
+import 'package:app/services/moodle_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,6 +27,50 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   String? taskCourse;
   DateTime? taskStartDate;
   DateTime? taskEndDate;
+  late final PersonalTaskDatabase personalTasksDB;
+  List<Map<String, dynamic>>? tasks;
+
+  @override
+  void initState() {
+    super.initState();
+    personalTasksDB = PersonalTaskDatabase(
+        userid: widget.user.id.toString(),
+        moodleid: MoodleApiService.getMoodleURL().toString());
+    loadTasks();
+  }
+
+  void clearTaskDialog() {
+    _taskname.clear();
+    _taskdescription.clear();
+    _taskCourse.clear();
+    taskStartDate = null;
+    taskEndDate = null;
+  }
+
+  Widget showTasks(PersonalTask task) {
+    return ListTile(
+      title: Text(task.name),
+      subtitle: Text(task.description),
+    );
+  }
+
+  List<PersonalTask> getAllTasks(List<Map<String, dynamic>>? data) {
+    List<PersonalTask> tasks = [];
+
+    if (data != null) {
+      for (var task in data) {
+        tasks.add(PersonalTask.fromMap(task));
+      }
+    }
+    return tasks;
+  }
+
+  Future<void> loadTasks() async {
+    final personalTasks = await personalTasksDB.getPersonalTasks();
+    setState(() {
+      tasks = personalTasks;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +93,12 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                 ],
               ),
             ),
+            Expanded(
+                child: SingleChildScrollView(
+              child: Column(
+                children: getAllTasks(tasks).map(showTasks).toList(),
+              ),
+            )),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -101,7 +154,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                 ),
                 const SizedBox(height: 10),
                 TextField(
-                  controller: _taskname,
+                  controller: _taskdescription,
                   cursorColor: Colors.black,
                   maxLines: 5,
                   decoration: InputDecoration(
@@ -174,11 +227,11 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                                   DateTime? startDate = await showDatePicker(
                                       context: context,
                                       builder: (context, child) {
-                                          return Theme(
-                                            data: ThemeData(useMaterial3: false), 
-                                            child: child ?? const SizedBox()
-                                          );
-                                        },
+                                        return Theme(
+                                            data:
+                                                ThemeData(useMaterial3: false),
+                                            child: child ?? const SizedBox());
+                                      },
                                       firstDate: DateTime.now(),
                                       lastDate: taskEndDate ?? DateTime(2100),
                                       locale: const Locale('es', 'ES'),
@@ -225,9 +278,9 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                                         context: context,
                                         builder: (context, child) {
                                           return Theme(
-                                            data: ThemeData(useMaterial3: false), 
-                                            child: child ?? const SizedBox()
-                                          );
+                                              data: ThemeData(
+                                                  useMaterial3: false),
+                                              child: child ?? const SizedBox());
                                         },
                                         firstDate:
                                             taskStartDate ?? DateTime.now(),
@@ -254,7 +307,21 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                     style: const ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(Colors.blue),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      personalTasksDB.createPersonalTask(PersonalTask(
+                          userid: widget.user.id,
+                          moodleid: MoodleApiService.getMoodleURL().toString(),
+                          name: _taskname.text,
+                          description: _taskdescription.text,
+                          course: _taskCourse.text,
+                          startdate: taskStartDate!,
+                          enddate: taskEndDate!));
+                      Future.delayed(const Duration(milliseconds: 10), () {
+                        loadTasks();
+                      });
+                      clearTaskDialog();
+                      setDialogState(() {});
+                    },
                     child: const Text('Crear tarea',
                         style: TextStyle(color: Colors.white)))
               ],
