@@ -24,8 +24,11 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   bool selectTask = true;
   bool selectQuiz = true;
   Map<int, Color> coursesColors = {};
+  DateTime? ganttStartDate;
+  DateTime? ganttEndDate;
 
-  List<dynamic> getEvents(List<Courses> selectedCourses) {
+  List<dynamic> getEvents(List<Courses> selectedCourses,
+      {DateTime? startDate, DateTime? endDate}) {
     List<dynamic> events = [];
 
     final coursesToShow = selectedCourses.isEmpty
@@ -38,8 +41,25 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         List<Assign> orderedAssignments =
             reorderAssignments(course.assignments!);
         for (var event in orderedAssignments) {
-          if (event.duedate * 1000 >= DateTime.now().millisecondsSinceEpoch ||
-              event.duedate == 0) {
+          DateTime eventDate =
+              DateTime.fromMillisecondsSinceEpoch(event.duedate * 1000);
+          bool include = false;
+          if (startDate != null && endDate != null) {
+            include = (eventDate.isAfter(startDate) ||
+                    eventDate.isAtSameMomentAs(startDate)) &&
+                (eventDate.isBefore(endDate) ||
+                    eventDate.isAtSameMomentAs(endDate));
+          } else if (startDate != null && endDate == null) {
+            include = eventDate.isAfter(startDate) ||
+                eventDate.isAtSameMomentAs(startDate);
+          } else if (startDate == null && endDate != null) {
+            include = eventDate.isBefore(endDate) ||
+                eventDate.isAtSameMomentAs(endDate);
+          } else if (startDate == null && endDate == null) {
+            include = true;
+          }
+
+          if (include) {
             events.add(event);
           }
         }
@@ -48,8 +68,25 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
       if (course.quizzes != null && selectQuiz) {
         List<Quiz> orderedQuizzes = reorderQuizzes(course.quizzes!);
         for (var event in orderedQuizzes) {
-          if (event.timeclose * 1000 >= DateTime.now().millisecondsSinceEpoch ||
-              event.timeclose == 0) {
+          DateTime eventDate =
+              DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000);
+          bool include = false;
+          if (startDate != null && endDate != null) {
+            include = (eventDate.isAfter(startDate) ||
+                    eventDate.isAtSameMomentAs(startDate)) &&
+                (eventDate.isBefore(endDate) ||
+                    eventDate.isAtSameMomentAs(endDate));
+          } else if (startDate != null && endDate == null) {
+            include = eventDate.isAfter(startDate) ||
+                eventDate.isAtSameMomentAs(startDate);
+          } else if (startDate == null && endDate != null) {
+            include = eventDate.isBefore(endDate) ||
+                eventDate.isAtSameMomentAs(endDate);
+          } else if (startDate == null && endDate == null) {
+            include = true;
+          }
+
+          if (include) {
             events.add(event);
           }
         }
@@ -85,66 +122,180 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: Row(
-              children: [
-                const Text(
-                  'Aañdir filtros',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-                  textAlign: TextAlign.center,
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    const Text(
+                      'Añadir filtros',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16.0),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Spacer(),
+                    TextButton(
+                        style: const ButtonStyle(
+                            overlayColor: WidgetStatePropertyAll(Colors.white)),
+                        onPressed: () {
+                          setState(() {
+                            _clear();
+                          });
+                        },
+                        child: const Text(
+                          'Borrar',
+                          style: TextStyle(color: Colors.blue),
+                        ))
+                  ],
                 ),
-                const Spacer(),
-                TextButton(
-                    style: const ButtonStyle(
-                        overlayColor: WidgetStatePropertyAll(Colors.white)),
-                    onPressed: () {
-                      setState(() {
-                        _clear();
-                      });
-                    },
-                    child: const Text(
-                      'Borrar',
-                      style: TextStyle(color: Colors.blue),
-                    ))
-              ],
-            ),
-            backgroundColor: Colors.white,
-            elevation: 3.0,
-            content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  {'name': 'Cursos', 'function': _openCoursesFilter},
-                  {'name': 'Tareas', 'function': _openTypesFilter}
-                ].map((element) {
-                  return Row(
+                backgroundColor: Colors.white,
+                elevation: 3.0,
+                content: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Row(children: [
+                    Expanded(
+                        child: TextButton(
+                            style: ButtonStyle(
+                                overlayColor:
+                                    WidgetStatePropertyAll(Colors.grey[100])),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Future.delayed(Duration.zero, () {
+                                _openCoursesFilter();
+                              });
+                            },
+                            child: const Row(
+                              children: [
+                                Text(
+                                  'Cursos',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.keyboard_arrow_right,
+                                  color: Colors.black,
+                                )
+                              ],
+                            )))
+                  ]),
+                  Row(children: [
+                    Expanded(
+                        child: TextButton(
+                            style: ButtonStyle(
+                                overlayColor:
+                                    WidgetStatePropertyAll(Colors.grey[100])),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Future.delayed(Duration.zero, () {
+                                _openTypesFilter();
+                              });
+                            },
+                            child: const Row(
+                              children: [
+                                Text(
+                                  'Tareas',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.keyboard_arrow_right,
+                                  color: Colors.black,
+                                )
+                              ],
+                            )))
+                  ]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                          child: TextButton(
-                              style: ButtonStyle(
-                                  overlayColor:
-                                      WidgetStatePropertyAll(Colors.grey[100])),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                Future.delayed(Duration.zero, () {
-                                  (element['function'] as VoidCallback).call();
-                                });
+                        child: GestureDetector(
+                          onTap: () async {
+                            DateTime? startDate = await showDatePicker(
+                                context: context,
+                                builder: (context, child) {
+                                  return Theme(
+                                      data: ThemeData(useMaterial3: false),
+                                      child: child ?? const SizedBox());
+                                },
+                                firstDate: DateTime.now()
+                                    .subtract(const Duration(days: 365)),
+                                lastDate: ganttEndDate ??
+                                    DateTime.now()
+                                        .add(const Duration(days: 365)),
+                                locale: const Locale('es', 'ES'),
+                                helpText: 'Fecha inicial',
+                                confirmText: 'Aceptar',
+                                cancelText: 'Cancelar');
+                            setState(() {
+                              ganttStartDate = startDate;
+                              _events = getEvents(selectedCourses, startDate: ganttStartDate, endDate:ganttEndDate);
+                              setDialogState(() {});
+                            });
+                          },
+                          child: Container(
+                            height: 27,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Center(
+                                child: Text(
+                              ganttStartDate != null
+                                  ? DateFormat('dd/MM/y')
+                                      .format(ganttStartDate!)
+                                  : 'dd/mm/aaaa',
+                              style: TextStyle(
+                                  color: Colors.black.withOpacity(0.7)),
+                            )),
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.arrow_right),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            DateTime? endDate = await showDatePicker(
+                              context: context,
+                              builder: (context, child) {
+                                return Theme(
+                                    data: ThemeData(useMaterial3: false),
+                                    child: child ?? const SizedBox());
                               },
-                              child: Row(
-                                children: [
-                                  Text(
-                                    element['name'] as String,
-                                    style: const TextStyle(color: Colors.black),
-                                  ),
-                                  const Spacer(),
-                                  const Icon(
-                                    Icons.keyboard_arrow_right,
-                                    color: Colors.black,
-                                  )
-                                ],
-                              )))
+                              firstDate: ganttStartDate ??
+                                  DateTime.now()
+                                      .subtract(const Duration(days: 365)),
+                              lastDate:
+                                  DateTime.now().add(const Duration(days: 365)),
+                              locale: const Locale('es', 'ES'),
+                              helpText: 'Fecha final',
+                              confirmText: 'Aceptar',
+                              cancelText: 'Cancelar',
+                            );
+                            setState(() {
+                              ganttEndDate = endDate;
+                              _events = getEvents(selectedCourses, startDate: ganttStartDate, endDate:ganttEndDate);
+                              setDialogState(() {});
+                            });
+                          },
+                          child: Container(
+                            height: 27,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Center(
+                                child: Text(
+                              ganttEndDate != null
+                                  ? DateFormat('dd/MM/y').format(ganttEndDate!)
+                                  : 'dd/mm/aaaa',
+                              style: TextStyle(
+                                  color: Colors.black.withOpacity(0.7)),
+                            )),
+                          ),
+                        ),
+                      )
                     ],
-                  );
-                }).toList()),
+                  )
+                ]),
+              );
+            },
           );
         });
   }
@@ -343,6 +494,10 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     if (eventStartDate != 0 && eventEndDate == 0) {
       return DateTime.fromMillisecondsSinceEpoch(eventStartDate * 1000);
     } else if (eventStartDate == 0 && eventEndDate != 0) {
+      if (DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000)
+          .isBefore(DateTime.now())) {
+        return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
+      }
       return DateTime.now();
     } else if (eventStartDate != 0 && eventEndDate != 0) {
       return DateTime.fromMillisecondsSinceEpoch(eventStartDate * 1000);
@@ -355,7 +510,11 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     if (eventStartDate != 0 && eventEndDate == 0) {
       return DateTime.fromMillisecondsSinceEpoch(eventStartDate * 1000);
     } else if (eventStartDate == 0 && eventEndDate != 0) {
-      return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
+      if (DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000)
+          .isBefore(DateTime.now())) {
+        return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
+      }
+      return DateTime.now();
     } else if (eventStartDate != 0 && eventEndDate != 0) {
       return DateTime.fromMillisecondsSinceEpoch(eventEndDate * 1000);
     } else {
@@ -365,6 +524,14 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
 
   GanttData getGanttEvent(dynamic event) {
     if (event.runtimeType == Assign && selectTask) {
+      print(getStartDate(
+          eventStartDate: event.allowsubmissionsfromdate,
+          eventEndDate: event.duedate));
+
+      print(getEndDate(
+          eventStartDate: event.allowsubmissionsfromdate,
+          eventEndDate: event.duedate));
+      print(event.name);
       return GanttData(
         label: event.name,
         description: widget.user.userCourses!
@@ -702,16 +869,16 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                     Row(
                       children: [
                         const Icon(Icons.timer_outlined, size: 14),
-                    const SizedBox(width: 5),
-                    Text(_getTimeDifference(
-                        DateTime.now(),
-                        getEndDate(
-                            eventStartDate: event.runtimeType == Assign
-                                ? event.allowsubmissionsfromdate
-                                : event.timeopen,
-                            eventEndDate: event.runtimeType == Assign
-                                ? event.duedate
-                                : event.timeclose)))
+                        const SizedBox(width: 5),
+                        Text(_getTimeDifference(
+                            DateTime.now(),
+                            getEndDate(
+                                eventStartDate: event.runtimeType == Assign
+                                    ? event.allowsubmissionsfromdate
+                                    : event.timeopen,
+                                eventEndDate: event.runtimeType == Assign
+                                    ? event.duedate
+                                    : event.timeclose)))
                       ],
                     ),
                     Row(
@@ -743,8 +910,8 @@ String _getTimeDifference(DateTime now, DateTime eventEnd) {
 }
 
 String _getTaskGrade(dynamic event) {
-  if(event.runtimeType == Assign){
-    if(event.submission.graded){
+  if (event.runtimeType == Assign) {
+    if (event.submission.graded) {
       if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
         return ((event.submission.grade * 10) / event.grade).toString();
       } else {
