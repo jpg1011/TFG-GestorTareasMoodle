@@ -316,7 +316,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                           course: _taskCourse.text,
                           startdate: taskStartDate!,
                           enddate: taskEndDate!));
-                      Future.delayed(const Duration(milliseconds: 10), () {
+                      Future.delayed(Duration.zero, () {
                         loadTasks();
                       });
                       clearTaskDialog();
