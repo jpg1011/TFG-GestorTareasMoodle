@@ -8,6 +8,7 @@ import 'package:app/screens/gantt_chart/material_charts.dart';
 import 'package:app/models/user_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GanttChartScreen extends StatefulWidget {
   final UserModel user;
@@ -26,6 +27,67 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   Map<int, Color> coursesColors = {};
   DateTime? ganttStartDate;
   DateTime? ganttEndDate;
+
+  @override
+  void initState() {
+    super.initState();
+    loadSavedFilters().then((_){
+      setState(() {
+        _events = getEvents(selectedCourses);
+      });
+    });
+    generateCoursesColors();
+    initializeDateFormatting('es');
+  }
+
+  Future<void> saveFilters() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    List<String> coursesids = [];
+
+    for (var course in selectedCourses) {
+      coursesids.add(course.id.toString());
+    }
+    prefs.setStringList('coursesids', coursesids);
+    prefs.setBool('selectTask', selectTask);
+    prefs.setBool('selectQuiz', selectQuiz);
+    if (ganttStartDate != null) {
+      prefs.setString('ganttStartDate', ganttStartDate!.toIso8601String());
+    }
+    if (ganttEndDate != null) {
+      prefs.setString('ganttEndDate', ganttEndDate!.toIso8601String());
+    }
+  }
+
+  Future<void> loadSavedFilters() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    List<String> coursesids = prefs.getStringList('coursesids') ?? [];
+
+    if (coursesids.isEmpty) {
+      selectedCourses = [];
+    } else {
+      for (var courseid in coursesids) {
+        selectedCourses.add(widget.user.userCourses!
+            .firstWhere((course) => course.id == int.parse(courseid)));
+      }
+    }
+
+    selectTask = prefs.getBool('selectTask') ?? true;
+    selectQuiz = prefs.getBool('selectQuiz') ?? true;
+
+    if (prefs.getString('ganttStartDate') != null) {
+      ganttStartDate = DateTime.parse(prefs.getString('ganttStartDate')!);
+    } else {
+      ganttStartDate = null;
+    }
+
+    if (prefs.getString('ganttEndDate') != null) {
+      ganttEndDate = DateTime.parse(prefs.getString('ganttEndDate')!);
+    } else {
+      ganttEndDate = null;
+    }
+  }
 
   List<dynamic> getEvents(List<Courses> selectedCourses,
       {DateTime? startDate, DateTime? endDate}) {
@@ -108,16 +170,6 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     return orderedList;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _events = getEvents([]);
-    selectTask = true;
-    selectQuiz = true;
-    generateCoursesColors();
-    initializeDateFormatting('es');
-  }
-
   _openFilterDialog() {
     return showDialog(
         context: context,
@@ -141,6 +193,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                           setState(() {
                             _clear();
                           });
+                          saveFilters();
                         },
                         child: const Text(
                           'Borrar',
@@ -227,7 +280,10 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                                 cancelText: 'Cancelar');
                             setState(() {
                               ganttStartDate = startDate;
-                              _events = getEvents(selectedCourses, startDate: ganttStartDate, endDate:ganttEndDate);
+                              _events = getEvents(selectedCourses,
+                                  startDate: ganttStartDate,
+                                  endDate: ganttEndDate);
+                              saveFilters();
                               setDialogState(() {});
                             });
                           },
@@ -271,7 +327,10 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                             );
                             setState(() {
                               ganttEndDate = endDate;
-                              _events = getEvents(selectedCourses, startDate: ganttStartDate, endDate:ganttEndDate);
+                              _events = getEvents(selectedCourses,
+                                  startDate: ganttStartDate,
+                                  endDate: ganttEndDate);
+                              saveFilters();
                               setDialogState(() {});
                             });
                           },
@@ -355,6 +414,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                                     }
                                     _events = getEvents(selectedCourses);
                                   });
+                                  saveFilters();
                                   setDialogState(() {});
                                 });
                           }).toList(),
@@ -406,6 +466,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                             selectTask = !selectTask;
                             _events = getEvents(selectedCourses);
                           });
+                          saveFilters();
                           setDialogState(() {});
                         },
                         icon: Icon(
@@ -524,14 +585,6 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
 
   GanttData getGanttEvent(dynamic event) {
     if (event.runtimeType == Assign && selectTask) {
-      print(getStartDate(
-          eventStartDate: event.allowsubmissionsfromdate,
-          eventEndDate: event.duedate));
-
-      print(getEndDate(
-          eventStartDate: event.allowsubmissionsfromdate,
-          eventEndDate: event.duedate));
-      print(event.name);
       return GanttData(
         label: event.name,
         description: widget.user.userCourses!
