@@ -31,12 +31,15 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   List<Map<String, dynamic>>? tasks;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-    personalTasksDB = PersonalTaskDatabase(
-        userid: widget.user.id.toString(),
-        moodleid: MoodleApiService.getMoodleURL().toString());
-    loadTasks();
+    MoodleApiService.getMoodleURL().then((moodleURL) {
+      setState(() {
+      personalTasksDB = PersonalTaskDatabase(
+        userid: widget.user.id.toString(), moodleid: moodleURL);
+      });
+      loadTasks();
+    });
   }
 
   void clearTaskDialog() {
@@ -307,10 +310,11 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                     style: const ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(Colors.blue),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      final moodle = await MoodleApiService.getMoodleURL();
                       personalTasksDB.createPersonalTask(PersonalTask(
                           userid: widget.user.id,
-                          moodleid: MoodleApiService.getMoodleURL().toString(),
+                          moodleid: moodle.toString(),
                           name: _taskname.text,
                           description: _taskdescription.text,
                           course: _taskCourse.text,
