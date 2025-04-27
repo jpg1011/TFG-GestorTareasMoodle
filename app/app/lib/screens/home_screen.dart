@@ -1,4 +1,4 @@
-import 'package:app/screens/personal_tasks_screen.dart';
+import 'package:app/screens/personal_tasks/personal_tasks_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/gantt_chart_screen.dart';
 import 'package:app/models/user_model.dart';
