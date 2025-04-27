@@ -1,10 +1,10 @@
 import 'dart:collection';
-import 'dart:ffi';
 import 'package:app/models/courses.dart';
 import 'package:app/models/databases/personaltask_database.dart';
 import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
 import 'package:app/screens/home_screen.dart';
+import 'package:app/screens/personal_tasks/widgets/personal_task_column.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -29,14 +29,18 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   DateTime? taskEndDate;
   late final PersonalTaskDatabase personalTasksDB;
   List<Map<String, dynamic>>? tasks;
+  List<PersonalTask> endedTasks = [];
+  List<PersonalTask> urgentTasks = [];
+  List<PersonalTask> threeDaysTasks = [];
+  List<PersonalTask> sevenDaysTasks = [];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     MoodleApiService.getMoodleURL().then((moodleURL) {
       setState(() {
-      personalTasksDB = PersonalTaskDatabase(
-        userid: widget.user.id.toString(), moodleid: moodleURL);
+        personalTasksDB = PersonalTaskDatabase(
+            userid: widget.user.id.toString(), moodleid: moodleURL);
       });
       loadTasks();
     });
@@ -72,7 +76,29 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     final personalTasks = await personalTasksDB.getPersonalTasks();
     setState(() {
       tasks = personalTasks;
+      getTasksByDeadline();
     });
+  }
+
+  getTasksByDeadline() {
+    List<PersonalTask> allTask = getAllTasks(tasks);
+    DateTime now = DateTime.now();
+    endedTasks = allTask.where((task) => task.enddate.isBefore(now)).toList();
+    urgentTasks = allTask
+        .where((task) =>
+            task.enddate.isAfter(now) &&
+            task.enddate.isBefore(now.add(const Duration(hours: 24))))
+        .toList();
+    threeDaysTasks = allTask
+        .where((task) =>
+            task.enddate.isAfter(now.add(const Duration(hours: 24))) &&
+            task.enddate.isBefore(now.add(const Duration(days: 3))))
+        .toList();
+    sevenDaysTasks = allTask
+        .where((task) =>
+            task.enddate.isAfter(now.add(const Duration(days: 3))) &&
+            task.enddate.isBefore(now.add(const Duration(days: 7))))
+        .toList();
   }
 
   @override
@@ -97,11 +123,27 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
               ),
             ),
             Expanded(
-                child: SingleChildScrollView(
-              child: Column(
-                children: getAllTasks(tasks).map(showTasks).toList(),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Row(
+                    children: [
+                      Expanded(
+                          child: PersonalTaskColumn(endedTasks,
+                              columnName: 'Tareas finalizadas')),
+                      Expanded(
+                          child: PersonalTaskColumn(urgentTasks,
+                              columnName: 'Tareas urgentes')),
+                      Expanded(
+                          child: PersonalTaskColumn(threeDaysTasks,
+                              columnName: 'Próximos 3 días')),
+                      Expanded(
+                          child: PersonalTaskColumn(sevenDaysTasks,
+                              columnName: '3 días o más')),
+                    ],
+                  );
+                },
               ),
-            )),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -138,197 +180,204 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
             title: const Text('Nueva tarea',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 textAlign: TextAlign.center),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _taskname,
-                  cursorColor: Colors.black,
-                  decoration: InputDecoration(
-                      hintText: 'Nombre de la tarea',
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 5),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                              const BorderSide(color: Colors.blue, width: 2)),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _taskdescription,
-                  cursorColor: Colors.black,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                      hintText: 'Descripción de la tarea',
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 5),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                              const BorderSide(color: Colors.blue, width: 2)),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
-                ),
-                const SizedBox(height: 10),
-                DropdownMenu(
-                  controller: _taskCourse,
-                  enableSearch: false,
-                  hintText: 'Seleccione curso',
-                  menuStyle: MenuStyle(
-                    backgroundColor:
-                        WidgetStatePropertyAll(Theme.of(context).primaryColor),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _taskname,
+                    cursorColor: Colors.black,
+                    decoration: InputDecoration(
+                        hintText: 'Nombre de la tarea',
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 5),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Colors.blue, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10))),
                   ),
-                  inputDecorationTheme: InputDecorationTheme(
-                      outlineBorder: const BorderSide(color: Colors.black),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                              const BorderSide(color: Colors.blue, width: 2)),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
-                  onSelected: (value) {
-                    setState(() {
-                      taskCourse = value;
-                    });
-                    setDialogState(() {});
-                  },
-                  dropdownMenuEntries: UnmodifiableListView<MenuEntry>(
-                    widget.user.userCourses!.map<MenuEntry>((Courses course) =>
-                        MenuEntry(
-                            value: course.fullname, label: course.fullname)),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _taskdescription,
+                    cursorColor: Colors.black,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    minLines: 1,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                        hintText: 'Descripción de la tarea',
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 5),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Colors.blue, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10))),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(10)),
-                        height: 45,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      taskStartDate != null
-                                          ? DateFormat('dd/MM/y')
-                                              .format(taskStartDate!)
-                                          : 'dd/mm/aaaa',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black.withOpacity(0.5)),
-                                    ))),
-                            const VerticalDivider(),
-                            IconButton(
-                                onPressed: () async {
-                                  DateTime? startDate = await showDatePicker(
-                                      context: context,
-                                      builder: (context, child) {
-                                        return Theme(
-                                            data:
-                                                ThemeData(useMaterial3: false),
-                                            child: child ?? const SizedBox());
-                                      },
-                                      firstDate: DateTime.now(),
-                                      lastDate: taskEndDate ?? DateTime(2100),
-                                      locale: const Locale('es', 'ES'),
-                                      helpText: 'Fecha inicial',
-                                      confirmText: 'Aceptar',
-                                      cancelText: 'Cancelar');
-                                  setState(() {
-                                    taskStartDate = startDate;
-                                  });
-                                  setDialogState(() {});
-                                },
-                                icon: const Icon(Icons.event_available))
-                          ],
-                        ),
-                      ),
+                  const SizedBox(height: 10),
+                  DropdownMenu(
+                    controller: _taskCourse,
+                    enableSearch: false,
+                    hintText: 'Seleccione curso',
+                    menuStyle: MenuStyle(
+                      backgroundColor:
+                          WidgetStatePropertyAll(Theme.of(context).primaryColor),
                     ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(10)),
-                        height: 45,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      taskEndDate != null
-                                          ? DateFormat('dd/MM/y')
-                                              .format(taskEndDate!)
-                                          : 'dd/mm/aaaa',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black.withOpacity(0.5)),
-                                    ))),
-                            const VerticalDivider(),
-                            Align(
-                              alignment: Alignment.center,
-                              child: IconButton(
+                    inputDecorationTheme: InputDecorationTheme(
+                        outlineBorder: const BorderSide(color: Colors.black),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                const BorderSide(color: Colors.blue, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10))),
+                    onSelected: (value) {
+                      setState(() {
+                        taskCourse = value;
+                      });
+                      setDialogState(() {});
+                    },
+                    dropdownMenuEntries: UnmodifiableListView<MenuEntry>(
+                      widget.user.userCourses!.map<MenuEntry>((Courses course) =>
+                          MenuEntry(
+                              value: course.fullname, label: course.fullname)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black),
+                              borderRadius: BorderRadius.circular(10)),
+                          height: 45,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        taskStartDate != null
+                                            ? DateFormat('dd/MM/y')
+                                                .format(taskStartDate!)
+                                            : 'dd/mm/aaaa',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black.withOpacity(0.5)),
+                                      ))),
+                              const VerticalDivider(),
+                              IconButton(
                                   onPressed: () async {
-                                    DateTime? endDate = await showDatePicker(
+                                    DateTime? startDate = await showDatePicker(
                                         context: context,
                                         builder: (context, child) {
                                           return Theme(
-                                              data: ThemeData(
-                                                  useMaterial3: false),
+                                              data:
+                                                  ThemeData(useMaterial3: false),
                                               child: child ?? const SizedBox());
                                         },
-                                        firstDate:
-                                            taskStartDate ?? DateTime.now(),
-                                        lastDate: DateTime(2100),
+                                        firstDate: DateTime.now(),
+                                        lastDate: taskEndDate ?? DateTime(2100),
                                         locale: const Locale('es', 'ES'),
-                                        helpText: 'Fecha final',
+                                        helpText: 'Fecha inicial',
                                         confirmText: 'Aceptar',
                                         cancelText: 'Cancelar');
                                     setState(() {
-                                      taskEndDate = endDate;
+                                      taskStartDate = startDate;
                                     });
                                     setDialogState(() {});
                                   },
-                                  icon: const Icon(Icons.event_busy)),
-                            )
-                          ],
+                                  icon: const Icon(Icons.event_available))
+                            ],
+                          ),
                         ),
                       ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                    style: const ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(Colors.blue),
-                    ),
-                    onPressed: () async {
-                      final moodle = await MoodleApiService.getMoodleURL();
-                      personalTasksDB.createPersonalTask(PersonalTask(
-                          userid: widget.user.id,
-                          moodleid: moodle.toString(),
-                          name: _taskname.text,
-                          description: _taskdescription.text,
-                          course: _taskCourse.text,
-                          startdate: taskStartDate!,
-                          enddate: taskEndDate!));
-                      Future.delayed(Duration.zero, () {
-                        loadTasks();
-                      });
-                      clearTaskDialog();
-                      setDialogState(() {});
-                    },
-                    child: const Text('Crear tarea',
-                        style: TextStyle(color: Colors.white)))
-              ],
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black),
+                              borderRadius: BorderRadius.circular(10)),
+                          height: 45,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        taskEndDate != null
+                                            ? DateFormat('dd/MM/y')
+                                                .format(taskEndDate!)
+                                            : 'dd/mm/aaaa',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black.withOpacity(0.5)),
+                                      ))),
+                              const VerticalDivider(),
+                              Align(
+                                alignment: Alignment.center,
+                                child: IconButton(
+                                    onPressed: () async {
+                                      DateTime? endDate = await showDatePicker(
+                                          context: context,
+                                          builder: (context, child) {
+                                            return Theme(
+                                                data: ThemeData(
+                                                    useMaterial3: false),
+                                                child: child ?? const SizedBox());
+                                          },
+                                          firstDate:
+                                              taskStartDate ?? DateTime.now(),
+                                          lastDate: DateTime(2100),
+                                          locale: const Locale('es', 'ES'),
+                                          helpText: 'Fecha final',
+                                          confirmText: 'Aceptar',
+                                          cancelText: 'Cancelar');
+                                      setState(() {
+                                        taskEndDate = endDate;
+                                      });
+                                      setDialogState(() {});
+                                    },
+                                    icon: const Icon(Icons.event_busy)),
+                              )
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.blue),
+                      ),
+                      onPressed: () async {
+                        final moodle = await MoodleApiService.getMoodleURL();
+                        personalTasksDB
+                            .createPersonalTask(PersonalTask(
+                                userid: widget.user.id,
+                                moodleid: moodle.toString(),
+                                name: _taskname.text,
+                                description: _taskdescription.text,
+                                course: _taskCourse.text,
+                                startdate: taskStartDate!,
+                                enddate: taskEndDate!))
+                            .then((onValue) {
+                          loadTasks();
+                        });
+                        clearTaskDialog();
+                        setDialogState(() {});
+                      },
+                      child: const Text('Crear tarea',
+                          style: TextStyle(color: Colors.white)))
+                ],
+              ),
             ),
           );
         });
