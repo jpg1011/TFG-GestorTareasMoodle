@@ -68,11 +68,13 @@ class _PersonalTaskCardState extends State<PersonalTaskCard> {
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Text(
-                        'Finaliza: ${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(widget.task.enddate)}', overflow: TextOverflow.ellipsis),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                          'Finaliza: ${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(widget.task.enddate)}', overflow: TextOverflow.ellipsis),
+                    ),
                   )
                 ],
               )
