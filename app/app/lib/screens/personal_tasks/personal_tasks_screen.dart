@@ -96,8 +96,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
         .toList();
     sevenDaysTasks = allTask
         .where((task) =>
-            task.enddate.isAfter(now.add(const Duration(days: 3))) &&
-            task.enddate.isBefore(now.add(const Duration(days: 7))))
+            task.enddate.isAfter(now.add(const Duration(days: 3))))
         .toList();
     endedTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
     urgentTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
