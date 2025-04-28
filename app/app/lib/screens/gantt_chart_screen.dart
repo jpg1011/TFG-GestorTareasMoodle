@@ -27,11 +27,13 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   Map<int, Color> coursesColors = {};
   DateTime? ganttStartDate;
   DateTime? ganttEndDate;
+  bool openingDate = true;
+  bool closingDate = true;
 
   @override
   void initState() {
     super.initState();
-    loadSavedFilters().then((_){
+    loadSavedFilters().then((_) {
       setState(() {
         _events = getEvents(selectedCourses);
       });
@@ -57,6 +59,8 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     if (ganttEndDate != null) {
       prefs.setString('ganttEndDate', ganttEndDate!.toIso8601String());
     }
+    prefs.setBool('openingDate', openingDate);
+    prefs.setBool('closingDate', closingDate);
   }
 
   Future<void> loadSavedFilters() async {
@@ -87,6 +91,9 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     } else {
       ganttEndDate = null;
     }
+
+    openingDate = prefs.getBool('openingDate') ?? true;
+    closingDate = prefs.getBool('closingDate') ?? true;
   }
 
   List<dynamic> getEvents(List<Courses> selectedCourses,
@@ -105,25 +112,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         for (var event in orderedAssignments) {
           DateTime eventDate =
               DateTime.fromMillisecondsSinceEpoch(event.duedate * 1000);
-          bool include = false;
-          if (startDate != null && endDate != null) {
-            include = (eventDate.isAfter(startDate) ||
-                    eventDate.isAtSameMomentAs(startDate)) &&
-                (eventDate.isBefore(endDate) ||
-                    eventDate.isAtSameMomentAs(endDate));
-          } else if (startDate != null && endDate == null) {
-            include = eventDate.isAfter(startDate) ||
-                eventDate.isAtSameMomentAs(startDate);
-          } else if (startDate == null && endDate != null) {
-            include = eventDate.isBefore(endDate) ||
-                eventDate.isAtSameMomentAs(endDate);
-          } else if (startDate == null && endDate == null) {
-            include = true;
-          }
-
-          if (include) {
-            events.add(event);
-          }
+          inRange(startDate, endDate, eventDate, events, event);
         }
       }
 
@@ -132,30 +121,50 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         for (var event in orderedQuizzes) {
           DateTime eventDate =
               DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000);
-          bool include = false;
-          if (startDate != null && endDate != null) {
-            include = (eventDate.isAfter(startDate) ||
-                    eventDate.isAtSameMomentAs(startDate)) &&
-                (eventDate.isBefore(endDate) ||
-                    eventDate.isAtSameMomentAs(endDate));
-          } else if (startDate != null && endDate == null) {
-            include = eventDate.isAfter(startDate) ||
-                eventDate.isAtSameMomentAs(startDate);
-          } else if (startDate == null && endDate != null) {
-            include = eventDate.isBefore(endDate) ||
-                eventDate.isAtSameMomentAs(endDate);
-          } else if (startDate == null && endDate == null) {
-            include = true;
-          }
-
-          if (include) {
-            events.add(event);
-          }
+          inRange(startDate, endDate, eventDate, events, event);
         }
       }
     }
 
     return events;
+  }
+
+  void inRange(DateTime? startDate, DateTime? endDate, DateTime eventDate,
+      List<dynamic> events, dynamic event) {
+    bool include = false;
+    if (startDate != null && endDate != null) {
+      include = (eventDate.isAfter(startDate) ||
+              eventDate.isAtSameMomentAs(startDate)) &&
+          (eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate));
+    } else if (startDate != null && endDate == null) {
+      include =
+          eventDate.isAfter(startDate) || eventDate.isAtSameMomentAs(startDate);
+    } else if (startDate == null && endDate != null) {
+      include =
+          eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate);
+    } else if (startDate == null && endDate == null) {
+      include = true;
+    }
+
+    if (include) {
+      if (openingDate) {
+        final open = event.runtimeType == Assign
+            ? event.allowsubmissionsfromdate != 0
+            : event.timeopen != 0;
+        if (!open) {
+          return;
+        }
+      }
+      if (closingDate) {
+        final close = event.runtimeType == Assign
+            ? event.duedate != 0
+            : event.timeclose != 0;
+        if (!close) {
+          return;
+        }
+      }
+      events.add(event);
+    }
   }
 
   List<Assign> reorderAssignments(List<Assign> listToOrder) {
@@ -350,6 +359,40 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                           ),
                         ),
                       )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                          fillColor: WidgetStatePropertyAll(
+                              openingDate ? Colors.blue : Colors.white),
+                          value: openingDate,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value != null) {
+                                openingDate = value;
+                                _events = getEvents(selectedCourses);
+                              }
+                            });
+                            saveFilters();
+                            setDialogState(() {});
+                          }),
+                      const Text('Fecha apertura'),
+                      Checkbox(
+                          fillColor: WidgetStatePropertyAll(
+                              closingDate ? Colors.blue : Colors.white),
+                          value: closingDate,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value != null) {
+                                closingDate = value;
+                                _events = getEvents(selectedCourses);
+                              }
+                            });
+                            saveFilters();
+                            setDialogState(() {});
+                          }),
+                      const Text('Fecha cierre')
                     ],
                   )
                 ]),
@@ -619,8 +662,8 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   }
 
   _clear() {
-    _events = getEvents([]);
     selectedCourses = [];
+    _events = getEvents(selectedCourses);
     selectTask = true;
     selectQuiz = true;
   }
@@ -801,14 +844,16 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                       builder: (context, constraints) {
                         return SingleChildScrollView(
                           child: Column(
-                            children: _events
-                                .expand((event) => [
-                                      const SizedBox(height: 16),
-                                      generateCard(
-                                          event: event,
-                                          width: constraints.maxWidth)
-                                    ])
-                                .toList(),
+                            children: _events.expand<Widget>((event) {
+                              if (event != null) {
+                                return [
+                                  const SizedBox(height: 16),
+                                  generateCard(
+                                      event: event, width: constraints.maxWidth)
+                                ];
+                              }
+                              return [];
+                            }).toList(),
                           ),
                         );
                       },
@@ -964,7 +1009,7 @@ String _getTimeDifference(DateTime now, DateTime eventEnd) {
 
 String _getTaskGrade(dynamic event) {
   if (event.runtimeType == Assign) {
-    if (event.submission.graded) {
+    if (event.submission.graded && event.submission.grade != null) {
       if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
         return ((event.submission.grade * 10) / event.grade).toString();
       } else {
