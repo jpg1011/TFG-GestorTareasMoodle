@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class PersonalTaskColumn extends StatelessWidget {
   final List<PersonalTask> tasks;
   final String columnName;
-  const PersonalTaskColumn(this.tasks, {super.key, required this.columnName});
+  final double width;
+  const PersonalTaskColumn(this.tasks, {super.key, required this.columnName, required this.width});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: width,
       height: double.infinity,
       margin: const EdgeInsets.all(4.0),
       decoration: BoxDecoration(
