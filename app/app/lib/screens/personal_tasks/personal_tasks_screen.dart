@@ -33,6 +33,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   List<PersonalTask> urgentTasks = [];
   List<PersonalTask> threeDaysTasks = [];
   List<PersonalTask> sevenDaysTasks = [];
+  bool timeView = true;
 
   @override
   void initState() {
@@ -95,8 +96,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
             task.enddate.isBefore(now.add(const Duration(days: 3))))
         .toList();
     sevenDaysTasks = allTask
-        .where((task) =>
-            task.enddate.isAfter(now.add(const Duration(days: 3))))
+        .where((task) => task.enddate.isAfter(now.add(const Duration(days: 3))))
         .toList();
     endedTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
     urgentTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
@@ -122,28 +122,56 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                                 HomeScreen(user: widget.user)));
                       },
                       icon: const Icon(Icons.arrow_back, color: Colors.black)),
+                  const Spacer(),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          timeView = !timeView;
+                        });
+                      },
+                      style: const ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                      icon: Icon(
+                        timeView ? Icons.access_time : Icons.menu_book,
+                        color: Colors.white,
+                      ))
                 ],
               ),
             ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  return Row(
-                    children: [
-                      Expanded(
-                          child: PersonalTaskColumn(endedTasks,
-                              columnName: 'Tareas finalizadas')),
-                      Expanded(
-                          child: PersonalTaskColumn(urgentTasks,
-                              columnName: 'Tareas urgentes')),
-                      Expanded(
-                          child: PersonalTaskColumn(threeDaysTasks,
-                              columnName: 'Próximos 3 días')),
-                      Expanded(
-                          child: PersonalTaskColumn(sevenDaysTasks,
-                              columnName: '3 días o más')),
-                    ],
-                  );
+                  if (timeView) {
+                    return Row(
+                      children: [
+                        Expanded(
+                            child: PersonalTaskColumn(endedTasks, width: constraints.maxWidth / 4,
+                                columnName: 'Tareas finalizadas')),
+                        Expanded(
+                            child: PersonalTaskColumn(urgentTasks, width: constraints.maxWidth / 4,
+                                columnName: 'Tareas urgentes')),
+                        Expanded(
+                            child: PersonalTaskColumn(threeDaysTasks, width: constraints.maxWidth / 4,
+                                columnName: 'Próximos 3 días')),
+                        Expanded(
+                            child: PersonalTaskColumn(sevenDaysTasks, width: constraints.maxWidth / 4,
+                                columnName: '3 días o más')),
+                      ],
+                    );
+                  } else {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                          children: widget.user.userCourses!.map((course) {
+                        final courseTasks = getAllTasks(tasks).where((courseTask) => courseTask.course == course.fullname).toList();
+                        return PersonalTaskColumn(
+                          courseTasks,
+                          width: constraints.maxWidth / 4,
+                          columnName: course.shortname
+                        );
+                      }).toList()),
+                    );
+                  }
                 },
               ),
             ),
