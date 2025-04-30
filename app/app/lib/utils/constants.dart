@@ -1,3 +1,5 @@
+import 'package:app/models/courses.dart';
+
 /*
   Name: MOODLE_SERVICE_NAME
   Description: URL of the Moodle server
@@ -45,3 +47,14 @@ const String WS_GET_USER_COURSES = 'core_enrol_get_users_courses';
   Description: Get user quizzes by courseId
 */
 const String WS_GET_COURSE_QUIZ = 'mod_quiz_get_quizzes_by_courses';
+
+class Filters {
+  static List<dynamic> events = [];
+  static List<Courses> selectedCourses = [];
+  static DateTime? ganttStartDate;
+  static DateTime? ganttEndDate;
+  static bool selectTask = true;
+  static bool selectQuiz = true;
+  static bool openingDate = true;
+  static bool closingDate = true;
+}

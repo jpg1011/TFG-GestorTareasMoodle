@@ -1,562 +1,33 @@
 import 'dart:math';
 import 'package:app/models/assign.dart';
-import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
 import 'package:app/screens/home_screen.dart';
+import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/gantt_chart/material_charts.dart';
 import 'package:app/models/user_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class GanttChartScreen extends StatefulWidget {
   final UserModel user;
+  final List<dynamic> events;
+  
 
-  const GanttChartScreen({super.key, required this.user});
+  const GanttChartScreen({super.key, required this.user, required this.events});
 
   @override
   State<GanttChartScreen> createState() => _GanttChartScreenState();
 }
 
 class _GanttChartScreenState extends State<GanttChartScreen> {
-  List<dynamic> _events = [];
-  List<Courses> selectedCourses = [];
-  bool selectTask = true;
-  bool selectQuiz = true;
   Map<int, Color> coursesColors = {};
-  DateTime? ganttStartDate;
-  DateTime? ganttEndDate;
-  bool openingDate = true;
-  bool closingDate = true;
 
   @override
   void initState() {
     super.initState();
-    loadSavedFilters().then((_) {
-      setState(() {
-        _events = getEvents(selectedCourses);
-      });
-    });
     generateCoursesColors();
     initializeDateFormatting('es');
-  }
-
-  Future<void> saveFilters() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    List<String> coursesids = [];
-
-    for (var course in selectedCourses) {
-      coursesids.add(course.id.toString());
-    }
-    prefs.setStringList('coursesids', coursesids);
-    prefs.setBool('selectTask', selectTask);
-    prefs.setBool('selectQuiz', selectQuiz);
-    if (ganttStartDate != null) {
-      prefs.setString('ganttStartDate', ganttStartDate!.toIso8601String());
-    }
-    if (ganttEndDate != null) {
-      prefs.setString('ganttEndDate', ganttEndDate!.toIso8601String());
-    }
-    prefs.setBool('openingDate', openingDate);
-    prefs.setBool('closingDate', closingDate);
-  }
-
-  Future<void> loadSavedFilters() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    List<String> coursesids = prefs.getStringList('coursesids') ?? [];
-
-    if (coursesids.isEmpty) {
-      selectedCourses = [];
-    } else {
-      for (var courseid in coursesids) {
-        selectedCourses.add(widget.user.userCourses!
-            .firstWhere((course) => course.id == int.parse(courseid)));
-      }
-    }
-
-    selectTask = prefs.getBool('selectTask') ?? true;
-    selectQuiz = prefs.getBool('selectQuiz') ?? true;
-
-    if (prefs.getString('ganttStartDate') != null) {
-      ganttStartDate = DateTime.parse(prefs.getString('ganttStartDate')!);
-    } else {
-      ganttStartDate = null;
-    }
-
-    if (prefs.getString('ganttEndDate') != null) {
-      ganttEndDate = DateTime.parse(prefs.getString('ganttEndDate')!);
-    } else {
-      ganttEndDate = null;
-    }
-
-    openingDate = prefs.getBool('openingDate') ?? true;
-    closingDate = prefs.getBool('closingDate') ?? true;
-  }
-
-  List<dynamic> getEvents(List<Courses> selectedCourses,
-      {DateTime? startDate, DateTime? endDate}) {
-    List<dynamic> events = [];
-
-    final coursesToShow = selectedCourses.isEmpty
-        ? widget.user.userCourses!
-        : widget.user.userCourses!
-            .where((course) => selectedCourses.contains(course));
-
-    for (var course in coursesToShow) {
-      if (course.assignments != null && selectTask) {
-        List<Assign> orderedAssignments =
-            reorderAssignments(course.assignments!);
-        for (var event in orderedAssignments) {
-          DateTime eventDate =
-              DateTime.fromMillisecondsSinceEpoch(event.duedate * 1000);
-          inRange(startDate, endDate, eventDate, events, event);
-        }
-      }
-
-      if (course.quizzes != null && selectQuiz) {
-        List<Quiz> orderedQuizzes = reorderQuizzes(course.quizzes!);
-        for (var event in orderedQuizzes) {
-          DateTime eventDate =
-              DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000);
-          inRange(startDate, endDate, eventDate, events, event);
-        }
-      }
-    }
-
-    return events;
-  }
-
-  void inRange(DateTime? startDate, DateTime? endDate, DateTime eventDate,
-      List<dynamic> events, dynamic event) {
-    bool include = false;
-    if (startDate != null && endDate != null) {
-      include = (eventDate.isAfter(startDate) ||
-              eventDate.isAtSameMomentAs(startDate)) &&
-          (eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate));
-    } else if (startDate != null && endDate == null) {
-      include =
-          eventDate.isAfter(startDate) || eventDate.isAtSameMomentAs(startDate);
-    } else if (startDate == null && endDate != null) {
-      include =
-          eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate);
-    } else if (startDate == null && endDate == null) {
-      include = true;
-    }
-
-    if (include) {
-      if (openingDate) {
-        final open = event.runtimeType == Assign
-            ? event.allowsubmissionsfromdate != 0
-            : event.timeopen != 0;
-        if (!open) {
-          return;
-        }
-      }
-      if (closingDate) {
-        final close = event.runtimeType == Assign
-            ? event.duedate != 0
-            : event.timeclose != 0;
-        if (!close) {
-          return;
-        }
-      }
-      events.add(event);
-    }
-  }
-
-  List<Assign> reorderAssignments(List<Assign> listToOrder) {
-    List<Assign> orderedList = List.from(listToOrder);
-    orderedList.sort((a, b) => a.duedate.compareTo(b.duedate));
-    return orderedList;
-  }
-
-  List<Quiz> reorderQuizzes(List<Quiz> listToOrder) {
-    List<Quiz> orderedList = List.from(listToOrder);
-    orderedList.sort((a, b) => a.timeclose.compareTo(b.timeclose));
-    return orderedList;
-  }
-
-  _openFilterDialog() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: Row(
-                  children: [
-                    const Text(
-                      'Añadir filtros',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16.0),
-                      textAlign: TextAlign.center,
-                    ),
-                    const Spacer(),
-                    TextButton(
-                        style: const ButtonStyle(
-                            overlayColor: WidgetStatePropertyAll(Colors.white)),
-                        onPressed: () {
-                          setState(() {
-                            _clear();
-                          });
-                          saveFilters();
-                        },
-                        child: const Text(
-                          'Borrar',
-                          style: TextStyle(color: Colors.blue),
-                        ))
-                  ],
-                ),
-                backgroundColor: Colors.white,
-                elevation: 3.0,
-                content: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Row(children: [
-                    Expanded(
-                        child: TextButton(
-                            style: ButtonStyle(
-                                overlayColor:
-                                    WidgetStatePropertyAll(Colors.grey[100])),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Future.delayed(Duration.zero, () {
-                                _openCoursesFilter();
-                              });
-                            },
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'Cursos',
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                Spacer(),
-                                Icon(
-                                  Icons.keyboard_arrow_right,
-                                  color: Colors.black,
-                                )
-                              ],
-                            )))
-                  ]),
-                  Row(children: [
-                    Expanded(
-                        child: TextButton(
-                            style: ButtonStyle(
-                                overlayColor:
-                                    WidgetStatePropertyAll(Colors.grey[100])),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Future.delayed(Duration.zero, () {
-                                _openTypesFilter();
-                              });
-                            },
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'Tareas',
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                                Spacer(),
-                                Icon(
-                                  Icons.keyboard_arrow_right,
-                                  color: Colors.black,
-                                )
-                              ],
-                            )))
-                  ]),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            DateTime? startDate = await showDatePicker(
-                                context: context,
-                                builder: (context, child) {
-                                  return Theme(
-                                      data: ThemeData(useMaterial3: false),
-                                      child: child ?? const SizedBox());
-                                },
-                                firstDate: DateTime.now()
-                                    .subtract(const Duration(days: 365)),
-                                lastDate: ganttEndDate ??
-                                    DateTime.now()
-                                        .add(const Duration(days: 365)),
-                                locale: const Locale('es', 'ES'),
-                                helpText: 'Fecha inicial',
-                                confirmText: 'Aceptar',
-                                cancelText: 'Cancelar');
-                            setState(() {
-                              ganttStartDate = startDate;
-                              _events = getEvents(selectedCourses,
-                                  startDate: ganttStartDate,
-                                  endDate: ganttEndDate);
-                              saveFilters();
-                              setDialogState(() {});
-                            });
-                          },
-                          child: Container(
-                            height: 27,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Center(
-                                child: Text(
-                              ganttStartDate != null
-                                  ? DateFormat('dd/MM/y')
-                                      .format(ganttStartDate!)
-                                  : 'dd/mm/aaaa',
-                              style: TextStyle(
-                                  color: Colors.black.withOpacity(0.7)),
-                            )),
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.arrow_right),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            DateTime? endDate = await showDatePicker(
-                              context: context,
-                              builder: (context, child) {
-                                return Theme(
-                                    data: ThemeData(useMaterial3: false),
-                                    child: child ?? const SizedBox());
-                              },
-                              firstDate: ganttStartDate ??
-                                  DateTime.now()
-                                      .subtract(const Duration(days: 365)),
-                              lastDate:
-                                  DateTime.now().add(const Duration(days: 365)),
-                              locale: const Locale('es', 'ES'),
-                              helpText: 'Fecha final',
-                              confirmText: 'Aceptar',
-                              cancelText: 'Cancelar',
-                            );
-                            setState(() {
-                              ganttEndDate = endDate;
-                              _events = getEvents(selectedCourses,
-                                  startDate: ganttStartDate,
-                                  endDate: ganttEndDate);
-                              saveFilters();
-                              setDialogState(() {});
-                            });
-                          },
-                          child: Container(
-                            height: 27,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Center(
-                                child: Text(
-                              ganttEndDate != null
-                                  ? DateFormat('dd/MM/y').format(ganttEndDate!)
-                                  : 'dd/mm/aaaa',
-                              style: TextStyle(
-                                  color: Colors.black.withOpacity(0.7)),
-                            )),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                          fillColor: WidgetStatePropertyAll(
-                              openingDate ? Colors.blue : Colors.white),
-                          value: openingDate,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              if (value != null) {
-                                openingDate = value;
-                                _events = getEvents(selectedCourses);
-                              }
-                            });
-                            saveFilters();
-                            setDialogState(() {});
-                          }),
-                      const Text('Fecha apertura'),
-                      Checkbox(
-                          fillColor: WidgetStatePropertyAll(
-                              closingDate ? Colors.blue : Colors.white),
-                          value: closingDate,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              if (value != null) {
-                                closingDate = value;
-                                _events = getEvents(selectedCourses);
-                              }
-                            });
-                            saveFilters();
-                            setDialogState(() {});
-                          }),
-                      const Text('Fecha cierre')
-                    ],
-                  )
-                ]),
-              );
-            },
-          );
-        });
-  }
-
-  _openCoursesFilter() {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-                title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _openFilterDialog();
-                        },
-                        icon: const Icon(Icons.arrow_back)),
-                    const Text(
-                      'Seleccionar cursos',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16.0),
-                      textAlign: TextAlign.center,
-                    )
-                  ],
-                ),
-                backgroundColor: Colors.white,
-                elevation: 3.0,
-                content: widget.user.userCourses!.isEmpty
-                    ? const Text('No hay cursos para filtrar')
-                    : SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: _reorderCourses(widget.user.userCourses!)
-                              .map((course) {
-                            return FilterChip(
-                                checkmarkColor: Colors.white,
-                                backgroundColor: Colors.white,
-                                side: BorderSide.none,
-                                label: !selectedCourses.contains(course)
-                                    ? Text(course.fullname,
-                                        style: const TextStyle(
-                                            color: Colors.black))
-                                    : Text(course.fullname,
-                                        style: const TextStyle(
-                                            color: Colors.white)),
-                                selected: selectedCourses.contains(course),
-                                selectedColor: Colors.blue,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      selectedCourses.add(course);
-                                    } else {
-                                      selectedCourses.remove(course);
-                                    }
-                                    _events = getEvents(selectedCourses);
-                                  });
-                                  saveFilters();
-                                  setDialogState(() {});
-                                });
-                          }).toList(),
-                        ),
-                      ));
-          },
-        );
-      },
-    );
-  }
-
-  _openTypesFilter() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: Row(
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _openFilterDialog();
-                        },
-                        icon: const Icon(Icons.arrow_back)),
-                    const Text(
-                      'Seleccionar tipo',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16.0),
-                      textAlign: TextAlign.center,
-                    )
-                  ],
-                ),
-                content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: selectTask ? Colors.blue : Colors.white,
-                        border: Border.all(color: Colors.blue),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: IconButton(
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onPressed: () {
-                          setState(() {
-                            selectTask = !selectTask;
-                            _events = getEvents(selectedCourses);
-                          });
-                          saveFilters();
-                          setDialogState(() {});
-                        },
-                        icon: Icon(
-                          Icons.task,
-                          color: selectTask ? Colors.white : Colors.blue,
-                          size: 42,
-                        ),
-                        isSelected: selectTask,
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue),
-                        borderRadius: BorderRadius.circular(10),
-                        color: selectQuiz ? Colors.blue : Colors.white,
-                      ),
-                      child: IconButton(
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        icon: Icon(
-                          Icons.fact_check,
-                          color: selectQuiz ? Colors.white : Colors.blue,
-                          size: 42,
-                        ),
-                        isSelected: selectQuiz,
-                        onPressed: () {
-                          setState(() {
-                            selectQuiz = !selectQuiz;
-                            _events = getEvents(selectedCourses);
-                          });
-                          setDialogState(() {});
-                        },
-                      ),
-                    )
-                  ],
-                ),
-                backgroundColor: Colors.white,
-              );
-            },
-          );
-        });
-  }
-
-  List<Courses> _reorderCourses(List<Courses> coursesToOrder) {
-    List<Courses> orderCourses = List.from(coursesToOrder);
-    orderCourses.sort((a, b) => a.fullname.compareTo(b.fullname));
-    return orderCourses;
   }
 
   void generateCoursesColors() {
@@ -627,7 +98,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
   }
 
   GanttData getGanttEvent(dynamic event) {
-    if (event.runtimeType == Assign && selectTask) {
+    if (event.runtimeType == Assign && Filters.selectTask) {
       return GanttData(
         label: event.name,
         description: widget.user.userCourses!
@@ -642,7 +113,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
             eventStartDate: event.allowsubmissionsfromdate,
             eventEndDate: event.duedate),
       );
-    } else if (event.runtimeType == Quiz && selectQuiz) {
+    } else if (event.runtimeType == Quiz && Filters.selectQuiz) {
       return GanttData(
           label: event.name,
           description: widget.user.userCourses!
@@ -661,13 +132,6 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
         endDate: DateTime.now());
   }
 
-  _clear() {
-    selectedCourses = [];
-    _events = getEvents(selectedCourses);
-    selectTask = true;
-    selectQuiz = true;
-  }
-
   double getDiagramSize(List<dynamic> events) {
     double topDiagram = 20.0;
     double bottomDiagram = 90.0;
@@ -677,7 +141,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     if (events.isEmpty) {
       return minSize;
     } else {
-      size = _events.length * 60 + topDiagram + bottomDiagram;
+      size = events.length * 60 + topDiagram + bottomDiagram;
     }
 
     return max(size, minSize);
@@ -709,16 +173,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                             },
                             icon: const Icon(Icons.arrow_back,
                                 color: Colors.black)),
-                        const Spacer(),
-                        ElevatedButton(
-                            onPressed: () {
-                              _openFilterDialog();
-                            },
-                            style: const ButtonStyle(
-                                backgroundColor:
-                                    WidgetStatePropertyAll(Colors.blue)),
-                            child: const Icon(Icons.filter_list,
-                                color: Colors.white))
+                        const Spacer()
                       ],
                     ),
                   ),
@@ -737,17 +192,17 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                                       lineColor: Colors.grey,
                                       dateFormat:
                                           DateFormat('MMM dd, y', 'es')),
-                                  height: getDiagramSize(_events),
+                                  height: getDiagramSize(widget.events),
                                   width: constraints.maxWidth,
-                                  data: _events.isNotEmpty
-                                      ? _events
+                                  data: widget.events.isNotEmpty
+                                      ? widget.events
                                           .map((event) {
                                             if (event.runtimeType == Assign &&
-                                                selectTask) {
+                                                Filters.selectTask) {
                                               return getGanttEvent(event);
                                             } else if (event.runtimeType ==
                                                     Quiz &&
-                                                selectQuiz) {
+                                                Filters.selectQuiz) {
                                               return getGanttEvent(event);
                                             }
                                             return null;
@@ -763,10 +218,10 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                           builder: (context, constraints) {
                             return SingleChildScrollView(
                               child: Column(
-                                children: _events
+                                children: widget.events
                                     .expand((event) {
                                       if (event.runtimeType == Assign &&
-                                          selectTask) {
+                                          Filters.selectTask) {
                                         return [
                                           const SizedBox(height: 16),
                                           generateCard(
@@ -774,7 +229,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                                               width: constraints.maxWidth)
                                         ];
                                       } else if (event.runtimeType == Quiz &&
-                                          selectQuiz) {
+                                          Filters.selectQuiz) {
                                         return [
                                           const SizedBox(height: 16),
                                           generateCard(
@@ -805,15 +260,17 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              _openFilterDialog();
-                            },
+                        IconButton(
                             style: const ButtonStyle(
                                 backgroundColor:
-                                    WidgetStatePropertyAll(Colors.blue)),
-                            child: const Icon(Icons.filter_list,
-                                color: Colors.white))
+                                    WidgetStatePropertyAll(Colors.transparent)),
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      HomeScreen(user: widget.user)));
+                            },
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.black))
                       ],
                     ),
                   ),
@@ -825,10 +282,10 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                               showConnections: false,
                               verticalSpacing: 60.0,
                               lineColor: Colors.grey),
-                          height: getDiagramSize(_events),
+                          height: getDiagramSize(widget.events),
                           width: MediaQuery.of(context).size.width,
-                          data: _events.isNotEmpty
-                              ? _events.map((event) {
+                          data: widget.events.isNotEmpty
+                              ? widget.events.map((event) {
                                   return getGanttEvent(event);
                                 }).toList()
                               : [
@@ -844,7 +301,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                       builder: (context, constraints) {
                         return SingleChildScrollView(
                           child: Column(
-                            children: _events.expand<Widget>((event) {
+                            children: widget.events.expand<Widget>((event) {
                               if (event != null) {
                                 return [
                                   const SizedBox(height: 16),
