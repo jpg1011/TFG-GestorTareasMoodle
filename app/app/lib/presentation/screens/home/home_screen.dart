@@ -1,10 +1,10 @@
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
-import 'package:app/screens/personal_tasks/personal_tasks_screen.dart';
+import 'package:app/presentation/screens/personal_tasks/personal_tasks_screen.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:app/screens/gantt_chart_screen.dart';
+import 'package:app/presentation/screens/gantt_chart/gantt_chart_screen.dart';
 import 'package:app/models/user_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => GanttChartScreen(
-                          user: widget.user, events: Filters.events)));
+                          user: widget.user, events: getEvents(Filters.selectedCourses))));
                 },
                 child: const Text("Tareas Gantt")),
             ElevatedButton(

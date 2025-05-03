@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:app/screens/gantt_chart/src/models.dart';
-import 'package:app/screens/gantt_chart/src/painter.dart';
+import 'package:app/presentation/widgets/gantt_chart/gantt_chart/src/models.dart';
+import 'package:app/presentation/widgets/gantt_chart/gantt_chart/src/painter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 /// A customizable Gantt Chart widget that displays tasks over a timeline.

@@ -1,5 +1,5 @@
 import 'package:app/models/personaltask.dart';
-import 'package:app/screens/personal_tasks/widgets/personal_task_card.dart';
+import 'package:app/presentation/widgets/personal_tasks/personal_task_card.dart';
 import 'package:flutter/material.dart';
 
 class PersonalTaskColumn extends StatelessWidget {

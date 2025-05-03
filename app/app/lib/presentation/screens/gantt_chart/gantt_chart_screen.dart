@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'package:app/models/assign.dart';
 import 'package:app/models/quiz.dart';
-import 'package:app/screens/home_screen.dart';
+import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:app/screens/gantt_chart/material_charts.dart';
+import 'package:app/presentation/widgets/gantt_chart/gantt_chart/material_charts.dart';
 import 'package:app/models/user_model.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
