@@ -2,6 +2,8 @@ import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
 import 'package:app/presentation/screens/personal_tasks/personal_tasks_screen.dart';
+import 'package:app/presentation/widgets/home/home_features_botton.dart';
+import 'package:app/services/moodle_api_service.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:app/presentation/screens/gantt_chart/gantt_chart_screen.dart';
@@ -19,50 +21,132 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String getFirstname() {
+    final name = widget.user.fullname.split(', ');
+    return name.last;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Bienvenido'),
-        automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      body: Center(
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                ElevatedButton(
-                    style: const ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.blue)),
-                    onPressed: () {
-                      _openFilterDialog();
-                    },
-                    child: const Icon(
-                      Icons.filter_list,
-                      color: Colors.white,
-                    ))
-              ],
+            Container(
+              decoration: const BoxDecoration(
+                  color: Color(0xFF38373C),
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(32),
+                      bottomRight: Radius.circular(32))),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          'Inicio',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 34,
+                              color: Colors.white),
+                        ),
+                      ),
+                      const Spacer(),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundImage:
+                                NetworkImage(widget.user.profileimageurl!),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '¡Hola, ${getFirstname()}! 👋',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => GanttChartScreen(
-                          user: widget.user, events: getEvents(Filters.selectedCourses))));
-                },
-                child: const Text("Tareas Gantt")),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          PersonalTasksScreen(user: widget.user)));
-                },
-                child: const Text("Tareas Personales"))
+            const SizedBox(height: 50),
+            HomeFeaturesBotton(
+                label: 'Gantt',
+                icon: const Icon(Icons.view_timeline),
+                imgPath: 'assets/ganttPreview.png',
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            GanttChartScreen(
+                                user: widget.user,
+                                events: getEvents(Filters.selectedCourses)),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                              position: animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.ease))),
+                              child: child);
+                        },
+                      ));
+                }),
+            const SizedBox(height: 20),
+            HomeFeaturesBotton(
+                label: 'Tareas',
+                icon: const Icon(Icons.list_alt),
+                imgPath: 'assets/logoUBU.png',
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            PersonalTasksScreen(user: widget.user),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                              position: animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.ease))),
+                              child: child);
+                        },
+                      ));
+                }),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF38373C),
+                          shape: const CircleBorder(),
+                          fixedSize: const Size(60, 60),
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.zero),
+                      onPressed: () {
+                        _openFilterDialog();
+                      },
+                      child: const Icon(
+                        Icons.filter_alt,
+                        color: Colors.white,
+                      ))
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -179,7 +263,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 cancelText: 'Cancelar');
                             setState(() {
                               Filters.ganttStartDate = startDate;
-                              Filters.events = getEvents(Filters.selectedCourses,
+                              Filters.events = getEvents(
+                                  Filters.selectedCourses,
                                   startDate: Filters.ganttStartDate,
                                   endDate: Filters.ganttEndDate);
                               saveFilters();
@@ -226,7 +311,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                             setState(() {
                               Filters.ganttEndDate = endDate;
-                              Filters.events = getEvents(Filters.selectedCourses,
+                              Filters.events = getEvents(
+                                  Filters.selectedCourses,
                                   startDate: Filters.ganttStartDate,
                                   endDate: Filters.ganttEndDate);
                               saveFilters();
@@ -241,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Center(
                                 child: Text(
                               Filters.ganttEndDate != null
-                                  ? DateFormat('dd/MM/y').format(Filters.ganttEndDate!)
+                                  ? DateFormat('dd/MM/y')
+                                      .format(Filters.ganttEndDate!)
                                   : 'dd/mm/aaaa',
                               style: TextStyle(
                                   color: Colors.black.withOpacity(0.7)),
@@ -261,7 +348,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             setState(() {
                               if (value != null) {
                                 Filters.openingDate = value;
-                                Filters.events = getEvents(Filters.selectedCourses);
+                                Filters.events =
+                                    getEvents(Filters.selectedCourses);
                               }
                             });
                             saveFilters();
@@ -276,7 +364,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             setState(() {
                               if (value != null) {
                                 Filters.closingDate = value;
-                                Filters.events = getEvents(Filters.selectedCourses);
+                                Filters.events =
+                                    getEvents(Filters.selectedCourses);
                               }
                             });
                             saveFilters();
@@ -336,7 +425,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     : Text(course.fullname,
                                         style: const TextStyle(
                                             color: Colors.white)),
-                                selected: Filters.selectedCourses.contains(course),
+                                selected:
+                                    Filters.selectedCourses.contains(course),
                                 selectedColor: Colors.blue,
                                 onSelected: (selected) {
                                   setState(() {
@@ -345,7 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     } else {
                                       Filters.selectedCourses.remove(course);
                                     }
-                                    Filters.events = getEvents(Filters.selectedCourses);
+                                    Filters.events =
+                                        getEvents(Filters.selectedCourses);
                                   });
                                   saveFilters();
                                   setDialogState(() {});
@@ -404,7 +495,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         icon: Icon(
                           Icons.task,
-                          color: Filters.selectTask ? Colors.white : Colors.blue,
+                          color:
+                              Filters.selectTask ? Colors.white : Colors.blue,
                           size: 42,
                         ),
                         isSelected: Filters.selectTask,
@@ -421,7 +513,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         highlightColor: Colors.transparent,
                         icon: Icon(
                           Icons.fact_check,
-                          color: Filters.selectQuiz ? Colors.white : Colors.blue,
+                          color:
+                              Filters.selectQuiz ? Colors.white : Colors.blue,
                           size: 42,
                         ),
                         isSelected: Filters.selectQuiz,
@@ -455,7 +548,8 @@ class _HomeScreenState extends State<HomeScreen> {
     prefs.setBool('selectTask', Filters.selectTask);
     prefs.setBool('selectQuiz', Filters.selectQuiz);
     if (Filters.ganttStartDate != null) {
-      prefs.setString('ganttStartDate', Filters.ganttStartDate!.toIso8601String());
+      prefs.setString(
+          'ganttStartDate', Filters.ganttStartDate!.toIso8601String());
     }
     if (Filters.ganttEndDate != null) {
       prefs.setString('ganttEndDate', Filters.ganttEndDate!.toIso8601String());
@@ -482,7 +576,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Filters.selectQuiz = prefs.getBool('selectQuiz') ?? true;
 
     if (prefs.getString('ganttStartDate') != null) {
-      Filters.ganttStartDate = DateTime.parse(prefs.getString('ganttStartDate')!);
+      Filters.ganttStartDate =
+          DateTime.parse(prefs.getString('ganttStartDate')!);
     } else {
       Filters.ganttStartDate = null;
     }
