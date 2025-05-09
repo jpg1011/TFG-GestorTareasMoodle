@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 class GanttChartScreen extends StatefulWidget {
   final UserModel user;
   final List<dynamic> events;
-  
 
   const GanttChartScreen({super.key, required this.user, required this.events});
 
@@ -28,6 +27,11 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
     super.initState();
     generateCoursesColors();
     initializeDateFormatting('es');
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void generateCoursesColors() {
@@ -149,134 +153,27 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            return Center(
-              child: Column(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+          children: [
+            TabBar(
+              indicatorColor: Color(0xFF38373C),
+              dividerColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              splashBorderRadius: BorderRadius.circular(20),
+              splashFactory: InkSplash.splashFactory,
+              tabs: [
+                Tab(text: 'Gantt', icon: Icon(Icons.view_timeline)),
+                Tab(text: 'Tareas', icon: Icon(Icons.list_alt))
+              ]
+            ),
+            Expanded(
+              child: TabBarView(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                            style: const ButtonStyle(
-                                backgroundColor:
-                                    WidgetStatePropertyAll(Colors.transparent)),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      HomeScreen(user: widget.user)));
-                            },
-                            icon: const Icon(Icons.arrow_back,
-                                color: Colors.black)),
-                        const Spacer()
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: LayoutBuilder(builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              child: MaterialGanttChart(
-                                  style: GanttChartStyle(
-                                      pointRadius: 6.0,
-                                      showConnections: false,
-                                      verticalSpacing: 60.0,
-                                      lineColor: Colors.grey,
-                                      dateFormat:
-                                          DateFormat('MMM dd, y', 'es')),
-                                  height: getDiagramSize(widget.events),
-                                  width: constraints.maxWidth,
-                                  data: widget.events.isNotEmpty
-                                      ? widget.events
-                                          .map((event) {
-                                            if (event.runtimeType == Assign &&
-                                                Filters.selectTask) {
-                                              return getGanttEvent(event);
-                                            } else if (event.runtimeType ==
-                                                    Quiz &&
-                                                Filters.selectQuiz) {
-                                              return getGanttEvent(event);
-                                            }
-                                            return null;
-                                          })
-                                          .where((event) => event != null)
-                                          .cast<GanttData>()
-                                          .toList()
-                                      : []),
-                            );
-                          }),
-                        ),
-                        Expanded(child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: widget.events
-                                    .expand((event) {
-                                      if (event.runtimeType == Assign &&
-                                          Filters.selectTask) {
-                                        return [
-                                          const SizedBox(height: 16),
-                                          generateCard(
-                                              event: event,
-                                              width: constraints.maxWidth)
-                                        ];
-                                      } else if (event.runtimeType == Quiz &&
-                                          Filters.selectQuiz) {
-                                        return [
-                                          const SizedBox(height: 16),
-                                          generateCard(
-                                              event: event,
-                                              width: constraints.maxWidth)
-                                        ];
-                                      }
-                                      return [];
-                                    })
-                                    .cast<Widget>()
-                                    .toList(),
-                              ),
-                            );
-                          },
-                        ))
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return Center(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                            style: const ButtonStyle(
-                                backgroundColor:
-                                    WidgetStatePropertyAll(Colors.transparent)),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      HomeScreen(user: widget.user)));
-                            },
-                            icon: const Icon(Icons.arrow_back,
-                                color: Colors.black))
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: MaterialGanttChart(
+                  MaterialGanttChart(
                           style: const GanttChartStyle(
                               pointRadius: 6.0,
                               showConnections: false,
@@ -294,185 +191,40 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
                                       endDate: DateTime.now(),
                                       label: 'No hay tareas pendientes'),
                                 ]),
-                    ),
-                  ),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          child: Column(
-                            children: widget.events.expand<Widget>((event) {
-                              if (event != null) {
-                                return [
-                                  const SizedBox(height: 16),
-                                  generateCard(
-                                      event: event, width: constraints.maxWidth)
-                                ];
-                              }
-                              return [];
-                            }).toList(),
-                          ),
-                        );
-                      },
-                    ),
+                  Container(
+                    color: Colors.red,
                   )
-                ],
-              ),
-            );
-          }
-        },
+                ]
+              )
+            )
+          ],
+        )),
       ),
     );
   }
 
-  Widget generateCard({required dynamic event, required double width}) {
-    return Material(
-        elevation: 5,
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-        child: Container(
-          height: 140,
-          width: width - 40,
-          decoration: const BoxDecoration(
-              color: Color(0xfffafafa),
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Column(children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(6.0, 6.0, 6.0, 3.0),
-                  child: Icon(
-                    event.runtimeType == Assign ? Icons.task : Icons.fact_check,
-                    color: coursesColors[event.course],
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6.0, 6.0, 6.0, 3.0),
-                    child: Text(
-                      event.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            const Divider(color: Colors.grey, indent: 20, endIndent: 20),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                        child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
-                      child: Text(
-                        widget.user.userCourses!
-                            .firstWhere((course) => course.id == event.course)
-                            .fullname,
-                        style: const TextStyle(fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ))
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.event_available, size: 15),
-                        Text(DateFormat('MMM dd, y  HH:mm', 'es').format(
-                            getStartDate(
-                                eventStartDate: event.runtimeType == Assign
-                                    ? event.allowsubmissionsfromdate
-                                    : event.timeopen,
-                                eventEndDate: event.runtimeType == Assign
-                                    ? event.duedate
-                                    : event.timeclose)))
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.event_busy, size: 15),
-                        Text(DateFormat('MMM dd, y  HH:mm', 'es')
-                            .format(
-                                getEndDate(
-                                    eventStartDate: event.runtimeType == Assign
-                                        ? event.allowsubmissionsfromdate
-                                        : event.timeopen,
-                                    eventEndDate: event.runtimeType == Assign
-                                        ? event.duedate
-                                        : event.timeclose)))
-                      ],
-                    )
-                  ],
-                ),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.timer_outlined, size: 14),
-                        const SizedBox(width: 5),
-                        Text(_getTimeDifference(
-                            DateTime.now(),
-                            getEndDate(
-                                eventStartDate: event.runtimeType == Assign
-                                    ? event.allowsubmissionsfromdate
-                                    : event.timeopen,
-                                eventEndDate: event.runtimeType == Assign
-                                    ? event.duedate
-                                    : event.timeclose)))
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.grade, size: 14),
-                        const SizedBox(width: 5),
-                        Text(_getTaskGrade(event))
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            )
-          ]),
-        ));
+  String _getTimeDifference(DateTime now, DateTime eventEnd) {
+    if (now.isBefore(eventEnd)) {
+      Duration difference = eventEnd.difference(now);
+
+      int days = difference.inDays;
+      int hours = difference.inHours % 24;
+      int minutes = difference.inMinutes % 60;
+      return "$days d $hours h $minutes m";
+    }
+    return '--';
   }
-}
 
-String _getTimeDifference(DateTime now, DateTime eventEnd) {
-  if (now.isBefore(eventEnd)) {
-    Duration difference = eventEnd.difference(now);
-
-    int days = difference.inDays;
-    int hours = difference.inHours % 24;
-    int minutes = difference.inMinutes % 60;
-    return "$days d $hours h $minutes m";
-  }
-  return '--';
-}
-
-String _getTaskGrade(dynamic event) {
-  if (event.runtimeType == Assign) {
-    if (event.submission.graded && event.submission.grade != null) {
-      if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
-        return ((event.submission.grade * 10) / event.grade).toString();
-      } else {
-        return "--";
+  String _getTaskGrade(dynamic event) {
+    if (event.runtimeType == Assign) {
+      if (event.submission.graded && event.submission.grade != null) {
+        if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
+          return ((event.submission.grade * 10) / event.grade).toString();
+        } else {
+          return "--";
+        }
       }
     }
+    return "--";
   }
-  return "--";
 }
