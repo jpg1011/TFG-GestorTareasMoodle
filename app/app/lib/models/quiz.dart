@@ -33,8 +33,8 @@ class Quiz {
   final int? quetionsperpage;
   final String? navmethod;
   final int? shuffleanswers;
-  final int? sumgrades;
-  final int? grade;
+  final double? sumgrades;
+  final double? grade;
   final int? timecreated;
   final int? timemodified;
   final String? password;
@@ -140,8 +140,8 @@ class Quiz {
         quetionsperpage = json['quetionsperpage'],
         navmethod = json['navmethod'],
         shuffleanswers = json['shuffleanswers'],
-        sumgrades = json['sumgrades'],
-        grade = json['grade'],
+        sumgrades = (json['sumgrades'])?.toDouble(),
+        grade = (json['grade'])?.toDouble(),
         timecreated = json['timecreated'],
         timemodified = json['timemodified'],
         password = json['password'],

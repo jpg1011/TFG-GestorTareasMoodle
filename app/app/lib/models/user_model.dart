@@ -94,7 +94,7 @@ class UserModel {
         city = json['city'],
         country = json['country'],
         profileimageurlsmall = json['profileimageurlsmall'],
-        profileimageurl = json['profileimageurl'];
+        profileimageurl = json['profileimageurl'] as String;
 
   set setUserCourses(List<Courses> courses) {
     userCourses = courses;
