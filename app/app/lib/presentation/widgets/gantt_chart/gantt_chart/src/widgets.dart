@@ -73,6 +73,12 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
     initializeDateFormatting('es', null);
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   /// Sets up the animation controller and the tween animation.
   void _setupAnimation() {
     _controller = AnimationController(
@@ -241,21 +247,31 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-                if (point.description != null) ...[ // Task description
-                  Text(point.description!, ),
+                if (point.description != null) ...[
+                  // Task description
+                  Text(
+                    point.description!,
+                  ),
                 ],
                 const SizedBox(height: 8),
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: Colors.black),
-                    children: [
-                      const TextSpan(text: 'Apertura: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.startDate)}\n'),
-                      const TextSpan(text: 'Cierre: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.endDate))
-                  ]),
+                      style: const TextStyle(color: Colors.black),
+                      children: [
+                        const TextSpan(
+                            text: 'Apertura: ',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextSpan(
+                            text:
+                                '${DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es').format(point.startDate)}\n'),
+                        const TextSpan(
+                            text: 'Cierre: ',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextSpan(
+                            text: DateFormat("d 'de' MMMM 'de' y, HH:mm", 'es')
+                                .format(point.endDate))
+                      ]),
                 ),
                 if (point.tapContent != null) ...[
                   const SizedBox(height: 8),
@@ -269,11 +285,11 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     style: const ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(Colors.blue)
-                    ),
+                        backgroundColor: WidgetStatePropertyAll(Colors.blue)),
                     onPressed: () =>
                         Navigator.of(context).pop(), // Close dialog
-                    child: const Text('Cerrar', style: TextStyle(color: Colors.white)),
+                    child: const Text('Cerrar',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
