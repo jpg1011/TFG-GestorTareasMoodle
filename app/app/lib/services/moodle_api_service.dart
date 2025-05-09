@@ -174,8 +174,11 @@ class MoodleApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        Submission submission =
-            Submission(submitted: false, submissionsenabled: false, graded: false, cansubmit: false);
+        Submission submission = Submission(
+            submitted: false,
+            submissionsenabled: false,
+            graded: false,
+            cansubmit: false);
         if (data['lastattempt'] != null) {
           if (data['lastattempt']['submission'] != null) {
             submission = Submission(
