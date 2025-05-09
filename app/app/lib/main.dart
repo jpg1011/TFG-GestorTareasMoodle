@@ -1,3 +1,4 @@
+import 'package:app/config/theme/app_theme.dart';
 import 'package:app/presentation/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       locale: const Locale('es','ES'),
       debugShowCheckedModeBanner: false,
       title: 'Gestor Tareas UBU',
-      theme: ThemeData(primaryColor: const Color.fromARGB(255, 255, 255, 255)),
+      theme: AppTheme().theme(),
       initialRoute: '/login',
       routes: {'/login': (context) => const LoginScreen()},
     );
