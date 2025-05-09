@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:app/presentation/widgets/login/login_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:app/models/user_model.dart';
 import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,23 +18,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final TextEditingController _urlMoodle = TextEditingController();
-  bool viewPassword = true;
+  final FocusNode _focusNode = FocusNode();
   String savedMoodle = 'URL Moodle';
+  bool saveEmailOption = false;
+  bool loging = false;
+  bool? isValid;
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
     chargeMoodle();
+    loadSavedEmail();
   }
 
   Future<void> chargeMoodle() async {
     final prefs = await SharedPreferences.getInstance();
     final savedURL = prefs.getString('moodleConection');
     setState(() {
-      savedMoodle = savedURL ?? 'URL Moodle';
+      savedMoodle = savedURL ?? 'https://moodleexample.com';
     });
   }
 
@@ -37,254 +48,284 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('moodleConection', _urlMoodle.text);
   }
 
-  Future<void> _openURLDialog() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Colors.white,
-            title: const Text(
-              'Guardar Moodle',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20.0),
-            ),
-            content: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _urlMoodle,
-                    cursorColor: Colors.black,
-                    decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.school_outlined),
-                        hintText: savedMoodle,
-                        border: const OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(40.0))),
-                        focusedBorder: const OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide: BorderSide(color: Colors.black)),
-                        focusColor: Colors.blue,
-                        suffixIcon: TextButton(
-                          style: const ButtonStyle(
-                            backgroundColor:
-                                WidgetStatePropertyAll(Colors.transparent),
-                            overlayColor:
-                                WidgetStatePropertyAll(Colors.transparent),
-                          ),
-                          onPressed: () async {
-                            await saveMoodle();
-                            await chargeMoodle();
-                            _urlMoodle.clear();
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            'Guardar',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        )),
-                  ),
-                )
-              ],
-            ),
-          );
-        });
+  Future<void> saveEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', _emailController.text);
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: const Color(0xFFF4F4F4),
-  //     body: Column(
-  //       children: [
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.end,
-  //           children: [
-  //             Padding(
-  //               padding: const EdgeInsets.all(4.0),
-  //               child: IconButton(
-  //                   hoverColor: Colors.transparent,
-  //                   highlightColor: Colors.transparent,
-  //                   onPressed: () {
-  //                     _openURLDialog();
-  //                   },
-  //                   icon: const Icon(Icons.school)),
-  //             )
-  //           ],
-  //         ),
-  //         Expanded(
-  //           flex: 3,
-  //           child: Column(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               Image.asset(
-  //                 'assets/logoUBU.png',
-  //                 height: 100,
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         Expanded(
-  //           flex: 4,
-  //           child: Container(
-  //             width: double.infinity,
-  //             decoration: const BoxDecoration(
-  //               color: Colors.white,
-  //               borderRadius: BorderRadius.vertical(
-  //                 top: Radius.circular(40),
-  //               ),
-  //             ),
-  //             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-  //             child: Column(
-  //               children: [
-  //                 const SizedBox(height: 20),
-  //                 const Text(
-  //                   'Iniciar Sesión',
-  //                   style: TextStyle(
-  //                     fontSize: 20,
-  //                     fontWeight: FontWeight.w600,
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 30),
-  //                 TextField(
-  //                   controller: _usernameController,
-  //                   decoration: InputDecoration(
-  //                     hintText: 'Correo universitario',
-  //                     filled: true,
-  //                     fillColor: Colors.grey[200],
-  //                     contentPadding: const EdgeInsets.symmetric(
-  //                         vertical: 15, horizontal: 20),
-  //                     border: OutlineInputBorder(
-  //                       borderRadius: BorderRadius.circular(30),
-  //                       borderSide: BorderSide.none,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 20),
-  //                 TextField(
-  //                   controller: _passwordController,
-  //                   obscureText: viewPassword,
-  //                   decoration: InputDecoration(
-  //                     hintText: 'Contraseña',
-  //                     suffixIcon: Padding(
-  //                       padding: const EdgeInsets.fromLTRB(0.0, 0.0, 8.0, 0.0),
-  //                       child: IconButton(
-  //                           onPressed: () {
-  //                             setState(() {
-  //                               viewPassword = !viewPassword;
-  //                             });
-  //                           },
-  //                           icon: Icon(viewPassword
-  //                               ? Icons.visibility
-  //                               : Icons.visibility_off)),
-  //                     ),
-  //                     filled: true,
-  //                     fillColor: Colors.grey[200],
-  //                     contentPadding: const EdgeInsets.symmetric(
-  //                         vertical: 15, horizontal: 20),
-  //                     border: OutlineInputBorder(
-  //                       borderRadius: BorderRadius.circular(30),
-  //                       borderSide: BorderSide.none,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(height: 30),
-  //                 ElevatedButton(
-  //                   onPressed: () async {
-  //                     bool success = await MoodleApiService.login(
-  //                         _usernameController.text, _passwordController.text);
-  //                     if (success) {
-  //                       var userInfo = await MoodleApiService.getUserInfo();
-  //                       final UserModel user = UserModel.fromJson(userInfo);
+  Future<bool> checkMoodleServer(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
 
-  //                       var userCourses = await MoodleApiService.getUserCourses(
-  //                           userInfo['id'] as int);
-  //                       user.userCourses = userCourses;
-  //                       for (var course in user.userCourses!) {
-  //                         var assignments =
-  //                             await MoodleApiService.getCourseAssignments(
-  //                                 course.id);
-  //                         course.assignments = assignments;
-  //                         for (var assign in course.assignments!) {
-  //                           assign.submission = await MoodleApiService
-  //                               .getAssignSubmissionStatus(assign.id);
-  //                         }
-  //                       }
+      if (response.statusCode == 200) {
+        return response.body.toLowerCase().contains('moodle');
+      } else {
+        throw Exception('Server status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 
-  //                       for (var course in user.userCourses!) {
-  //                         var quizzes = await MoodleApiService.getCourseQuizzes(
-  //                             course.id);
-  //                         course.quizzes = quizzes;
-  //                       }
+  Future<void> loginSetup() async {
+    bool success = await MoodleApiService.login(
+        _emailController.text, _passwordController.text);
+    if (success) {
+      setState(() {
+        loging = true;
+      });
+      if (saveEmailOption) await saveEmail();
+      var userInfo = await MoodleApiService.getUserInfo();
+      final UserModel user = UserModel.fromJson(userInfo);
 
-  //                       Navigator.of(context).push(MaterialPageRoute(
-  //                           builder: (context) => HomeScreen(user: user)));
-  //                     }
-  //                   },
-  //                   style: ElevatedButton.styleFrom(
-  //                     shape: RoundedRectangleBorder(
-  //                       borderRadius: BorderRadius.circular(30),
-  //                     ),
-  //                     backgroundColor: Colors.grey[300],
-  //                     padding: const EdgeInsets.symmetric(vertical: 15),
-  //                     minimumSize: const Size(double.infinity, 50),
-  //                   ),
-  //                   child: const Text(
-  //                     'Acceder',
-  //                     style: TextStyle(
-  //                       fontSize: 16,
-  //                       fontWeight: FontWeight.w600,
-  //                       color: Colors.black87,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(vertical: 10),
-  //           child: Text(
-  //             '© 2024 Universidad de Burgos',
-  //             style: TextStyle(
-  //               fontSize: 12,
-  //               color: Colors.grey[600],
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+      var userCourses =
+          await MoodleApiService.getUserCourses(userInfo['id'] as int);
+      user.userCourses = userCourses;
+      for (var course in user.userCourses!) {
+        var assignments =
+            await MoodleApiService.getCourseAssignments(course.id);
+        course.assignments = assignments;
+        for (var assign in course.assignments!) {
+          assign.submission =
+              await MoodleApiService.getAssignSubmissionStatus(assign.id);
+        }
+      }
+
+      for (var course in user.userCourses!) {
+        var quizzes = await MoodleApiService.getCourseQuizzes(course.id);
+        course.quizzes = quizzes;
+      }
+
+      setState(() {
+        loading = false;
+      });
+
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => HomeScreen(user: user)));
+    }
+  }
+
+  Future<void> loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('email') ?? '';
+    setState(() {
+      _emailController.text = savedEmail;
+      saveEmailOption = savedEmail.isNotEmpty;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: const BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(0.0, 1.0),
-                    blurRadius: 6.0
-                  )
-                ],
-                color: Colors.white,
-                shape: BoxShape.rectangle
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Image(
+                  image: const AssetImage('assets/logoUBU.png'),
+                  width: size.width * 0.8,
+                ),
               ),
-            )
-          ],
+              const SizedBox(height: 16),
+              const Text(
+                'Iniciar sesión',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Email',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              LoginTextField(
+                fieldLabel: 'Correo universitario',
+                controller: _emailController,
+                prefixIcon: const Icon(Icons.email),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Contraseña',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              LoginTextField(
+                fieldLabel: 'Contraseña',
+                controller: _passwordController,
+                prefixIcon: const Icon(Icons.lock),
+                isPassword: true,
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    child: const Text(
+                      'He olvidado mi contraseña',
+                      style: TextStyle(decoration: TextDecoration.underline),
+                    ),
+                    onTap: () => launchUrlString(
+                        'https://ubunet.ubu.es/caducada/olvido.seu'),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    tristate: false,
+                    checkColor: Colors.white,
+                    fillColor: WidgetStatePropertyAll(saveEmailOption
+                        ? const Color(0xFF212121)
+                        : Colors.white),
+                    value: saveEmailOption,
+                    shape: const CircleBorder(),
+                    onChanged: (bool? value) async {
+                      if (value == null) return;
+                      final prefs = await SharedPreferences.getInstance();
+                      setState(() {
+                        saveEmailOption = value;
+                      });
+                      if (saveEmailOption) {
+                        await prefs.setString('email', _emailController.text);
+                      } else {
+                        await prefs.remove('email');
+                      }
+                    },
+                  ),
+                  const Text('Recordar correo universitario',
+                      style: TextStyle(fontWeight: FontWeight.w500))
+                ],
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: const ButtonStyle(
+                        elevation: WidgetStatePropertyAll(5),
+                        backgroundColor:
+                            WidgetStatePropertyAll(Color(0xFF212121))),
+                    onPressed: () async {
+                      loginSetup();
+                    },
+                    child: !loging
+                        ? const Text('Iniciar sesión',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                                fontSize: 16))
+                        : const CircularProgressIndicator(color: Colors.white),
+                  ),
+                ),
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: InkWell(
+                      onTap: () {
+                        selectMoodle();
+                      },
+                      child: const Text('Conectarse a Moodle',
+                          style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w500))),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 
+  void login() {}
+
+  Future<void> selectMoodle() {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: SizedBox(
+                height: 200,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextField(
+                          controller: _urlMoodle,
+                          focusNode: _focusNode,
+                          decoration: InputDecoration(
+                              hintText: savedMoodle,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30)),
+                              suffixIcon: loading
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : (isValid != null
+                                      ? Icon(
+                                          isValid!
+                                              ? Icons.check
+                                              : Icons.cancel_outlined,
+                                          color: const Color(0xFF212121))
+                                      : null)),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                              style: const ButtonStyle(
+                                  backgroundColor: WidgetStatePropertyAll(
+                                      Color(0xFF212121))),
+                              onPressed: () async {
+                                isValid =
+                                    await checkMoodleServer(_urlMoodle.text);
+                                if (isValid != null && isValid!) {
+                                  await saveMoodle();
+                                  await chargeMoodle();
+                                  _urlMoodle.clear();
+                                }
+                                setModalState(() {});
+                              },
+                              child: const Text(
+                                'Guardar',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500),
+                              )),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
