@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool loging = false;
   bool? isValid;
   bool loading = false;
+  String? _loginError;
 
   @override
   void initState() {
@@ -68,45 +69,46 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> loginSetup() async {
-    bool success = await MoodleApiService.login(
-        _emailController.text, _passwordController.text);
-    if (success) {
-      setState(() {
-        loging = true;
-      });
-      if (saveEmailOption) await saveEmail();
-      var userInfo = await MoodleApiService.getUserInfo();
-      final UserModel user = UserModel.fromJson(userInfo);
-
-      var userCourses =
-          await MoodleApiService.getUserCourses(userInfo['id'] as int);
-      user.userCourses = userCourses;
-      for (var course in user.userCourses!) {
-        var assignments =
-            await MoodleApiService.getCourseAssignments(course.id);
-        course.assignments = assignments;
-        for (var assign in course.assignments!) {
-          assign.submission =
-              await MoodleApiService.getAssignSubmissionStatus(assign.id);
-        }
-      }
-
-      for (var course in user.userCourses!) {
-        var quizzes = await MoodleApiService.getCourseQuizzes(course.id);
-        course.quizzes = quizzes;
-        for (var quiz in course.quizzes!) {
-          quiz.quizgrade =
-              await MoodleApiService.getQuizSubmissionStatus(quiz.id);
-        }
-      }
-
-      setState(() {
-        loading = false;
-      });
-
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => HomeScreen(user: user)));
+    setState(() { loging = true; _loginError = null; });
+    try{
+      await MoodleApiService.login(_emailController.text, _passwordController.text);
+    }catch(e){
+      setState(() { loging = false; _loginError = 'Correo o contraseña incorrectos'; });
+      return;
     }
+
+    if (saveEmailOption) await saveEmail();
+    var userInfo = await MoodleApiService.getUserInfo();
+    final UserModel user = UserModel.fromJson(userInfo);
+
+    var userCourses =
+        await MoodleApiService.getUserCourses(userInfo['id'] as int);
+    user.userCourses = userCourses;
+    for (var course in user.userCourses!) {
+      var assignments =
+          await MoodleApiService.getCourseAssignments(course.id);
+      course.assignments = assignments;
+      for (var assign in course.assignments!) {
+        assign.submission =
+            await MoodleApiService.getAssignSubmissionStatus(assign.id);
+      }
+    }
+
+    for (var course in user.userCourses!) {
+      var quizzes = await MoodleApiService.getCourseQuizzes(course.id);
+      course.quizzes = quizzes;
+      for (var quiz in course.quizzes!) {
+        quiz.quizgrade =
+            await MoodleApiService.getQuizSubmissionStatus(quiz.id);
+      }
+    }
+
+    setState(() {
+      loading = false;
+    });
+
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => HomeScreen(user: user)));
   }
 
   Future<void> loadSavedEmail() async {
@@ -173,6 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 prefixIcon: const Icon(Icons.lock),
                 isPassword: true,
               ),
+              if (_loginError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: Text(_loginError!, style: const TextStyle(color: Colors.red)),
+                ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -226,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor:
                             WidgetStatePropertyAll(Color(0xFF212121))),
                     onPressed: () async {
-                      loginSetup();
+                      await loginSetup();
                     },
                     child: !loging
                         ? const Text('Iniciar sesión',
