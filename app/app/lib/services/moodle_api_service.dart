@@ -1,8 +1,10 @@
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
+import 'package:app/models/quiz_grade.dart';
 import 'package:app/models/submission.dart';
 import 'package:http/http.dart' as http;
+import 'package:html/parser.dart';
 import 'dart:convert';
 import 'package:app/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -219,7 +221,44 @@ class MoodleApiService {
     }
   }
 
+  static Future<QuizGrade> getQuizSubmissionStatus(int quizId) async {
+    final moodleURL = await getMoodleURL();
+    final url = Uri.parse('$moodleURL/webservice/rest/server.php');
+
+    try {
+      final response = await http.post(url, body: {
+        'wsfunction': WS_GET_QUIZ_GRADE,
+        'moodlewsrestformat': 'json',
+        'wstoken': _token,
+        'quizid': quizId.toString()
+      });
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        QuizGrade quizGrade = QuizGrade(hasgrade: false);
+        if (data['hasgrade']) {
+          quizGrade = QuizGrade(
+            hasgrade: true,
+            grade: data['grade'] != null ? double.parse(data['grade'].toString()) : null,
+            gradetopass: data['gradetopass'] != null ? double.parse(data['gradetopass'].toString()) : null
+          );
+          return quizGrade;
+        }
+
+        return quizGrade;
+      } else {
+        throw Exception('No response');
+      }
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
   static _formatGrade(String gradeToFormat) {
     return gradeToFormat.replaceAll(',', '.');
+  }
+
+  String parseHTMLString(String html) {
+    return parse(html).body?.text ?? '';
   }
 }
