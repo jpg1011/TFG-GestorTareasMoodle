@@ -18,7 +18,12 @@ class MoodleApiService {
     return prefs.getString('moodleConection') ?? 'URL Moodle';
   }
 
-  static Future<bool> login(String username, String password) async {
+  static Future<void> logout() async{
+    _token = null;
+    _username = null;
+  }
+
+  static Future<void> login(String username, String password) async {
     final moodleURL = await getMoodleURL();
     final uri = Uri.parse('$moodleURL/login/token.php');
 
@@ -35,13 +40,16 @@ class MoodleApiService {
       if (response.statusCode == 200) {
         _username = username;
         final data = jsonDecode(response.body);
-        _token = data['token'];
-        return true;
+        if (data['token'] != null) {
+          _token = data['token'];
+        } else {
+          throw Exception();
+        }
       } else {
-        return false;
+        throw Exception();
       }
     } catch (e) {
-      return false;
+      throw Exception();
     }
   }
 
@@ -238,10 +246,13 @@ class MoodleApiService {
         QuizGrade quizGrade = QuizGrade(hasgrade: false);
         if (data['hasgrade']) {
           quizGrade = QuizGrade(
-            hasgrade: true,
-            grade: data['grade'] != null ? double.parse(data['grade'].toString()) : null,
-            gradetopass: data['gradetopass'] != null ? double.parse(data['gradetopass'].toString()) : null
-          );
+              hasgrade: true,
+              grade: data['grade'] != null
+                  ? double.parse(data['grade'].toString())
+                  : null,
+              gradetopass: data['gradetopass'] != null
+                  ? double.parse(data['gradetopass'].toString())
+                  : null);
           return quizGrade;
         }
 

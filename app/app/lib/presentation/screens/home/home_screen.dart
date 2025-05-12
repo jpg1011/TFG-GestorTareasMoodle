@@ -1,6 +1,7 @@
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
+import 'package:app/presentation/screens/login/login_screen.dart';
 import 'package:app/presentation/screens/personal_tasks/personal_tasks_screen.dart';
 import 'package:app/presentation/widgets/home/home_features_botton.dart';
 import 'package:app/services/moodle_api_service.dart';
@@ -65,6 +66,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.exit_to_app,
+                              color: Colors.white),
+                          onPressed: () async {
+                            await MoodleApiService.logout();
+                            Navigator.of(context)
+                                .pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (context) => const LoginScreen()), 
+                                  (route) => false);
+                          },
+                        ),
+                      )
                     ],
                   ),
                   Padding(
@@ -100,7 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         transitionsBuilder:
                             (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
-                              position: animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.ease))),
+                              position: animation.drive(Tween(
+                                      begin: Offset(1.0, 0.0), end: Offset.zero)
+                                  .chain(CurveTween(curve: Curves.ease))),
                               child: child);
                         },
                       ));
@@ -119,7 +136,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         transitionsBuilder:
                             (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
-                              position: animation.drive(Tween(begin: Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.ease))),
+                              position: animation.drive(Tween(
+                                      begin: Offset(1.0, 0.0), end: Offset.zero)
+                                  .chain(CurveTween(curve: Curves.ease))),
                               child: child);
                         },
                       ));
