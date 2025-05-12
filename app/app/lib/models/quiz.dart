@@ -1,3 +1,5 @@
+import 'package:app/models/quiz_grade.dart';
+
 class Quiz {
   final int id;
   final int coursemodule;
@@ -50,6 +52,7 @@ class Quiz {
   final int? autosaveperiod;
   final int? hasfeedback;
   final int? hasquestions;
+  QuizGrade? quizgrade;
 
   Quiz({
     required this.id,
@@ -103,6 +106,7 @@ class Quiz {
     required this.autosaveperiod,
     required this.hasfeedback,
     required this.hasquestions,
+    this.quizgrade
   });
 
   Quiz.fromJson(Map<String, dynamic> json)

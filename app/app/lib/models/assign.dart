@@ -32,6 +32,7 @@ class Assign {
   final int preventsubmissionnotingroup;
   final String? submissionstatement;
   final int? submissionstatementformat;
+  final String? intro;
   Submission? submission;
 
   Assign(
@@ -66,6 +67,7 @@ class Assign {
       required this.preventsubmissionnotingroup,
       this.submissionstatement,
       this.submissionstatementformat,
+      this.intro,
       this.submission});
 
   Assign.fromJson(Map<String, dynamic> json)
@@ -99,5 +101,6 @@ class Assign {
         requiresubmissionstatement = json['requiresubmissionstatement'],
         preventsubmissionnotingroup = json['preventsubmissionnotingroup'],
         submissionstatement = json['submissionstatement'],
-        submissionstatementformat = json['submissionstatementformat'];
+        submissionstatementformat = json['submissionstatementformat'],
+        intro = json['intro'];
 }
