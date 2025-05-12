@@ -48,6 +48,12 @@ const String WS_GET_USER_COURSES = 'core_enrol_get_users_courses';
 */
 const String WS_GET_COURSE_QUIZ = 'mod_quiz_get_quizzes_by_courses';
 
+/*
+  Name: WS_GET_QUIZ_GRADE
+  Description: Get quiz grade by quizId
+*/
+const String WS_GET_QUIZ_GRADE = 'mod_quiz_get_user_best_grade ';
+
 class Filters {
   static List<dynamic> events = [];
   static List<Courses> selectedCourses = [];
