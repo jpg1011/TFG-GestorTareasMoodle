@@ -94,6 +94,10 @@ class _LoginScreenState extends State<LoginScreen> {
       for (var course in user.userCourses!) {
         var quizzes = await MoodleApiService.getCourseQuizzes(course.id);
         course.quizzes = quizzes;
+        for (var quiz in course.quizzes!) {
+          quiz.quizgrade =
+              await MoodleApiService.getQuizSubmissionStatus(quiz.id);
+        }
       }
 
       setState(() {
