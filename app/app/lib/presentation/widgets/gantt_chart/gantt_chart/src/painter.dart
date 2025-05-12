@@ -88,7 +88,7 @@ class GanttBasePainter extends CustomPainter {
       final dateText = TextPainter(
         text: TextSpan(
           text:
-              style.dateFormat?.format(date) ?? DateFormat.yMMMd().format(date),
+              style.dateFormat?.format(date) ?? DateFormat.yMMMd('es').format(date),
           style: style.dateStyle ??
               TextStyle(fontSize: 10, color: style.connectionLineColor),
         ),
