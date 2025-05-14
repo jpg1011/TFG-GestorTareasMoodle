@@ -27,10 +27,10 @@ class _TasksViewState extends State<TasksView> {
         child: Column(
           children: widget.coursesToShow.isNotEmpty 
             ? widget.coursesToShow.map((course) {
-                return CoursesTasks(coursename: course.shortname, courseevents: _ganttChartBackend.getCourseEvents(course), courseColor: _ganttChartBackend.generateCoursesColors(widget.user)[course.id]!);
+                return CoursesTasks(coursename: course.shortname, courseevents: _ganttChartBackend.getCourseEvents(course, widget.events), courseColor: _ganttChartBackend.generateCoursesColors(widget.user)[course.id]!);
               }).toList()
             : widget.user.userCourses!.map((course){
-              return CoursesTasks(coursename: course.shortname, courseevents: _ganttChartBackend.getCourseEvents(course), courseColor: _ganttChartBackend.generateCoursesColors(widget.user)[course.id]!);
+              return CoursesTasks(coursename: course.shortname, courseevents: _ganttChartBackend.getCourseEvents(course, widget.events), courseColor: _ganttChartBackend.generateCoursesColors(widget.user)[course.id]!);
             }).toList(),
         ),
       ),
