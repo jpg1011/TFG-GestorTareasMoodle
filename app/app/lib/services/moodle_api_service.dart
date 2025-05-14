@@ -4,7 +4,6 @@ import 'package:app/models/quiz.dart';
 import 'package:app/models/quiz_grade.dart';
 import 'package:app/models/submission.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart';
 import 'dart:convert';
 import 'package:app/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +17,7 @@ class MoodleApiService {
     return prefs.getString('moodleConection') ?? 'URL Moodle';
   }
 
-  static Future<void> logout() async{
+  static Future<void> logout() async {
     _token = null;
     _username = null;
   }
@@ -267,9 +266,5 @@ class MoodleApiService {
 
   static _formatGrade(String gradeToFormat) {
     return gradeToFormat.replaceAll(',', '.');
-  }
-
-  String parseHTMLString(String html) {
-    return parse(html).body?.text ?? '';
   }
 }
