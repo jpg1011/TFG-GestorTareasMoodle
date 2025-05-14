@@ -145,21 +145,19 @@ class GanttChartBackend {
   String getTaskGrade(dynamic event) {
     if (event.runtimeType == Assign) {
       if (event.submission.graded && event.submission.grade != null) {
-        if (event.grade == 1 || event.grade == 10 || event.grade == 100) {
-          return ((event.submission.grade * 10) / event.grade).toString();
-        } else {
-          return "Sin calificar";
-        }
+        return ((event.submission.grade * 10) / event.grade).toString();
       }
     } else {
       if (event.quizgrade.hasgrade && event.quizgrade.grade != null) {
-        return num.parse(((event.quizgrade.grade * 10) / event.grade).toString()).toStringAsFixed(2);
+        return num.parse(
+                ((event.quizgrade.grade * 10) / event.grade).toString())
+            .toStringAsFixed(2);
       }
     }
     return "Sin calificar";
   }
 
-  List<dynamic> getCourseEvents(Courses course) {
-    return Filters.events.where((event) => event.course == course.id).toList();
+  List<dynamic> getCourseEvents(Courses course, List<dynamic> events) {
+    return events.where((event) => event.course == course.id).toList();
   }
 }
