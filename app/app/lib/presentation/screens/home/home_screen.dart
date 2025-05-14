@@ -29,144 +29,147 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                  color: Color(0xFF38373C),
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(32),
-                      bottomRight: Radius.circular(32))),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'Inicio',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 34,
-                              color: Colors.white),
-                        ),
-                      ),
-                      const Spacer(),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundImage:
-                                NetworkImage(widget.user.profileimageurl!),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                    color: Color(0xFF38373C),
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32))),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            'Inicio',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 34,
+                                color: Colors.white),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.exit_to_app,
-                              color: Colors.white),
-                          onPressed: () async {
-                            await MoodleApiService.logout();
-                            Navigator.of(context)
-                                .pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (context) => const LoginScreen()), 
-                                  (route) => false);
-                          },
+                        const Spacer(),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundImage:
+                                  NetworkImage(widget.user.profileimageurl!),
+                            ),
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '¡Hola, ${getFirstname()}! 👋',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                            color: Colors.white),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            icon: const Icon(Icons.exit_to_app,
+                                color: Colors.white),
+                            onPressed: () async {
+                              await MoodleApiService.logout();
+                              Navigator.of(context)
+                                  .pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => const LoginScreen()), 
+                                    (route) => false);
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '¡Hola, ${getFirstname()}! 👋',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                              color: Colors.white),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 50),
-            HomeFeaturesBotton(
-                label: 'Gantt',
-                icon: const Icon(Icons.view_timeline),
-                imgPath: 'assets/ganttPreview.png',
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            GanttChartScreen(
-                                user: widget.user,
-                                events: getEvents(Filters.selectedCourses)),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                              position: animation.drive(Tween(
-                                      begin: Offset(1.0, 0.0), end: Offset.zero)
-                                  .chain(CurveTween(curve: Curves.ease))),
-                              child: child);
+              const SizedBox(height: 50),
+              HomeFeaturesBotton(
+                  label: 'Gantt',
+                  icon: const Icon(Icons.view_timeline),
+                  imgPath: 'assets/ganttPreview.png',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              GanttChartScreen(
+                                  user: widget.user,
+                                  events: getEvents(Filters.selectedCourses)),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                                position: animation.drive(Tween(
+                                        begin: Offset(1.0, 0.0), end: Offset.zero)
+                                    .chain(CurveTween(curve: Curves.ease))),
+                                child: child);
+                          },
+                        ));
+                  }),
+              const SizedBox(height: 20),
+              HomeFeaturesBotton(
+                  label: 'Tareas',
+                  icon: const Icon(Icons.list_alt),
+                  imgPath: 'assets/logoUBU.png',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              PersonalTasksScreen(user: widget.user),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                                position: animation.drive(Tween(
+                                        begin: Offset(1.0, 0.0), end: Offset.zero)
+                                    .chain(CurveTween(curve: Curves.ease))),
+                                child: child);
+                          },
+                        ));
+                  }),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF38373C),
+                            shape: const CircleBorder(),
+                            fixedSize: const Size(60, 60),
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.zero),
+                        onPressed: () {
+                          _openFilterDialog();
                         },
-                      ));
-                }),
-            const SizedBox(height: 20),
-            HomeFeaturesBotton(
-                label: 'Tareas',
-                icon: const Icon(Icons.list_alt),
-                imgPath: 'assets/logoUBU.png',
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            PersonalTasksScreen(user: widget.user),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                              position: animation.drive(Tween(
-                                      begin: Offset(1.0, 0.0), end: Offset.zero)
-                                  .chain(CurveTween(curve: Curves.ease))),
-                              child: child);
-                        },
-                      ));
-                }),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF38373C),
-                          shape: const CircleBorder(),
-                          fixedSize: const Size(60, 60),
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.zero),
-                      onPressed: () {
-                        _openFilterDialog();
-                      },
-                      child: const Icon(
-                        Icons.filter_alt,
-                        color: Colors.white,
-                      ))
-                ],
+                        child: const Icon(
+                          Icons.filter_alt,
+                          color: Colors.white,
+                        ))
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
