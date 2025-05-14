@@ -2,6 +2,7 @@ import 'package:app/backend/gantt_chart/gantt_chart_backend.dart';
 import 'package:app/models/assign.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 
 class TaskPage extends StatelessWidget {
@@ -68,10 +69,7 @@ class TaskPage extends StatelessWidget {
                   Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Text(
-                      MoodleApiService().parseHTMLString(event.intro ?? ''),
-                      textAlign: TextAlign.left,
-                    ),
+                    child: HtmlWidget(event.intro ?? '')
                   ),
                   Padding(
                     padding:
