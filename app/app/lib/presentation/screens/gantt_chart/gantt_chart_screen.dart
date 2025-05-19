@@ -1,5 +1,5 @@
-import 'package:app/presentation/widgets/gantt_chart/gantt_view.dart';
-import 'package:app/presentation/widgets/gantt_chart/tasks_view.dart';
+import 'package:app/presentation/widgets/gantt_chart/gantt_section/gantt_view.dart';
+import 'package:app/presentation/widgets/gantt_chart/task_section/tasks_view.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:app/models/user_model.dart';
@@ -34,19 +34,21 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
             child: Column(
           children: [
             TabBar(
-                indicatorColor: Color(0xFF38373C),
+                indicatorColor: const Color(0xFF38373C),
                 dividerColor: Colors.transparent,
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 splashBorderRadius: BorderRadius.circular(20),
                 splashFactory: InkSplash.splashFactory,
-                tabs: [
-                  Tab(text: 'Gantt', icon: Icon(Icons.view_timeline)),
-                  Tab(text: 'Tareas', icon: Icon(Icons.list_alt))
+                tabs: const [
+                   Tab(text: 'Gantt', icon: Icon(Icons.view_timeline)),
+                   Tab(text: 'Tareas', icon: Icon(Icons.list_alt))
                 ]),
             Expanded(
-                child: TabBarView(children: [
-              GanttView(events: widget.events, user: widget.user),
-              TasksView(user: widget.user, events: widget.events, coursesToShow: Filters.selectedCourses)
+                child: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    GanttView(events: widget.events, user: widget.user),
+                    TasksView(user: widget.user, events: widget.events, coursesToShow: Filters.selectedCourses)
             ]))
           ],
         )),
