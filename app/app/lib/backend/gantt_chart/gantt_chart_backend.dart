@@ -3,21 +3,22 @@ import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
 import 'package:app/models/user_model.dart';
-import 'package:app/presentation/widgets/gantt_chart/gantt_chart/src/models.dart';
+import 'package:app/presentation/widgets/gantt_chart/gantt_section/gantt_chart/src/models.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class GanttChartBackend {
-  double getDiagramSize(context, List<dynamic> events) {
-    double topDiagram = 20.0;
-    double bottomDiagram = 90.0;
+  double getDiagramHeight(context,
+      {required List<dynamic> events,
+      required double verticalSpacing,
+      required double top}) {
     double minSize = MediaQuery.of(context).size.height;
     double size = 0.0;
 
     if (events.isEmpty) {
       return minSize;
     } else {
-      size = events.length * 60 + topDiagram + bottomDiagram;
+      size = events.length * verticalSpacing + top + 60;
     }
 
     return max(size, minSize);
