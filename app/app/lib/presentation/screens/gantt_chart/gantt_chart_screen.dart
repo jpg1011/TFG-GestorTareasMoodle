@@ -34,15 +34,19 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
             child: Column(
           children: [
             TabBar(
-                indicatorColor: const Color(0xFF38373C),
-                dividerColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                splashBorderRadius: BorderRadius.circular(20),
-                splashFactory: InkSplash.splashFactory,
-                tabs: const [
-                   Tab(text: 'Gantt', icon: Icon(Icons.view_timeline)),
-                   Tab(text: 'Tareas', icon: Icon(Icons.list_alt))
-                ]),
+              indicator: UnderlineTabIndicator(
+                borderSide: const BorderSide(color: Color(0xFF212121), width: 2.0),
+                borderRadius: BorderRadius.circular(20)
+              ),
+              labelColor: Colors.black,
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorWeight: 2.0,
+              indicatorColor: Theme.of(context).primaryColor,
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              tabs: const [
+                 Tab(text: 'Gantt', icon: Icon(Icons.view_timeline), height: 50),
+                 Tab(text: 'Tareas', icon: Icon(Icons.list_alt), height: 50)
+              ]),
             Expanded(
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
