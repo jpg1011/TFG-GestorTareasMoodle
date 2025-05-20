@@ -9,6 +9,17 @@ class AppTheme {
          error: Colors.red
       ),
       scaffoldBackgroundColor: Colors.white,
+      tabBarTheme: TabBarTheme(
+        dividerColor: Colors.transparent,
+        indicator: BoxDecoration(
+          color: Color(0xFF212121),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        splashFactory: InkSplash.splashFactory,
+        unselectedLabelColor: Colors.black
+      )
     );
   }
 }
