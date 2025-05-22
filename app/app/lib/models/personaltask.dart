@@ -1,21 +1,24 @@
+enum TaskPriority { alta, media, baja }
+
 class PersonalTask {
   int userid;
   String moodleid;
   String name;
   String description;
   String course;
-  DateTime startdate;
-  DateTime enddate;
+  DateTime date;
+  bool done;
+  TaskPriority priority;
 
   PersonalTask(
-      {
-      required this.userid,
+      {required this.userid,
       required this.moodleid,
       required this.name,
       required this.description,
       required this.course,
-      required this.startdate,
-      required this.enddate});
+      required this.date,
+      this.done = false,
+      required this.priority});
 
   Map<String, dynamic> toMap() {
     return {
@@ -24,20 +27,20 @@ class PersonalTask {
       'name': name,
       'description': description,
       'course': course,
-      'startdate': startdate.toLocal().toIso8601String(),
-      'enddate': enddate.toLocal().toIso8601String(),
+      'date': date.toLocal().toIso8601String(),
+      'priority': priority.name,
+      'done': done
     };
   }
 
   factory PersonalTask.fromMap(Map<String, dynamic> map) {
     return PersonalTask(
-      userid: map['user_id'] as int,
-      moodleid: map['moodle_id'].toString(),
-      name: map['name'] as String,
-      description: map['description'] as String,
-      course: map['course'] as String,
-      startdate: DateTime.parse(map['startdate']),
-      enddate: DateTime.parse(map['enddate']),
-    );
+        userid: map['user_id'] as int,
+        moodleid: map['moodle_id'].toString(),
+        name: map['name'] as String,
+        description: map['description'] as String,
+        course: map['course'] as String,
+        date: DateTime.parse(map['date']),
+        priority: TaskPriority.values.byName(map['priority']));
   }
 }
