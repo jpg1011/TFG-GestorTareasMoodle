@@ -17,7 +17,6 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^2.8.4
   flutter_dotenv: ^5.2.1
-  percent_indicator: ^4.2.5
   url_launcher: ^6.3.1
   flutter_widget_from_html: ^0.16.0
   sliding_up_panel: ^2.0.0+1
