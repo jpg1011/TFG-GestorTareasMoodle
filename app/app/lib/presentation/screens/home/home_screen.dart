@@ -28,6 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    loadSavedFilters();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -75,10 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white),
                             onPressed: () async {
                               await MoodleApiService.logout();
-                              Navigator.of(context)
-                                  .pushAndRemoveUntil(
-                                    MaterialPageRoute(builder: (context) => const LoginScreen()), 
-                                    (route) => false);
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const LoginScreen()),
+                                  (route) => false);
                             },
                           ),
                         )
@@ -110,7 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) =>
+                          pageBuilder: (context, animation,
+                                  secondaryAnimation) =>
                               GanttChartScreen(
                                   user: widget.user,
                                   events: getEvents(Filters.selectedCourses)),
@@ -118,7 +126,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               (context, animation, secondaryAnimation, child) {
                             return SlideTransition(
                                 position: animation.drive(Tween(
-                                        begin: Offset(1.0, 0.0), end: Offset.zero)
+                                        begin: Offset(1.0, 0.0),
+                                        end: Offset.zero)
                                     .chain(CurveTween(curve: Curves.ease))),
                                 child: child);
                           },
@@ -133,13 +142,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) =>
-                              PersonalTasksScreen(user: widget.user),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  PersonalTasksScreen(user: widget.user),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             return SlideTransition(
                                 position: animation.drive(Tween(
-                                        begin: Offset(1.0, 0.0), end: Offset.zero)
+                                        begin: Offset(1.0, 0.0),
+                                        end: Offset.zero)
                                     .chain(CurveTween(curve: Curves.ease))),
                                 child: child);
                           },
