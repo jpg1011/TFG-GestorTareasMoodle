@@ -4,9 +4,11 @@ import 'package:app/models/databases/personaltask_database.dart';
 import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
 import 'package:app/presentation/screens/home/home_screen.dart';
-import 'package:app/presentation/widgets/personal_tasks/personal_task_column.dart';
+import 'package:app/presentation/widgets/personal_tasks/create_task_page.dart';
+import 'package:app/presentation/widgets/personal_tasks/task_card.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 
 class PersonalTasksScreen extends StatefulWidget {
@@ -21,24 +23,15 @@ class PersonalTasksScreen extends StatefulWidget {
 typedef MenuEntry = DropdownMenuEntry<String>;
 
 class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
-  TextEditingController _taskname = TextEditingController();
-  TextEditingController _taskdescription = TextEditingController();
-  TextEditingController _taskCourse = TextEditingController();
-  String? taskCourse;
-  DateTime? taskStartDate;
-  DateTime? taskEndDate;
-  late final PersonalTaskDatabase personalTasksDB;
-  List<Map<String, dynamic>>? tasks;
-  List<PersonalTask> endedTasks = [];
-  List<PersonalTask> urgentTasks = [];
-  List<PersonalTask> threeDaysTasks = [];
-  List<PersonalTask> sevenDaysTasks = [];
-  bool timeView = true;
+  PersonalTaskDatabase? personalTasksDB;
+  List<PersonalTask> doneTasks = [];
+  List<PersonalTask> undoneTasks = [];
 
   @override
   void initState() {
     super.initState();
     MoodleApiService.getMoodleURL().then((moodleURL) {
+      if (!mounted) return;
       setState(() {
         personalTasksDB = PersonalTaskDatabase(
             userid: widget.user.id.toString(), moodleid: moodleURL);
@@ -47,375 +40,299 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     });
   }
 
-  void clearTaskDialog() {
-    _taskname.clear();
-    _taskdescription.clear();
-    _taskCourse.clear();
-    taskStartDate = null;
-    taskEndDate = null;
-  }
+  Future<void> loadTasks() async {
+    final personalTasks = await personalTasksDB!.getPersonalTasks();
 
-  Widget showTasks(PersonalTask task) {
-    return ListTile(
-      title: Text(task.name),
-      subtitle: Text(task.description),
-    );
-  }
+    if (!mounted) return;
 
-  List<PersonalTask> getAllTasks(List<Map<String, dynamic>>? data) {
-    List<PersonalTask> tasks = [];
+    List<PersonalTask> done = [];
+    List<PersonalTask> undone = [];
 
-    if (data != null) {
-      for (var task in data) {
-        tasks.add(PersonalTask.fromMap(task));
+    for (var task in personalTasks) {
+      if (task['done']) {
+        done.add(PersonalTask.fromMap(task));
+      } else {
+        undone.add(PersonalTask.fromMap(task));
       }
     }
-    return tasks;
-  }
-
-  Future<void> loadTasks() async {
-    final personalTasks = await personalTasksDB.getPersonalTasks();
     setState(() {
-      tasks = personalTasks;
-      getTasksByDeadline();
+      doneTasks = done;
+      undoneTasks = undone;
     });
   }
 
-  getTasksByDeadline() {
-    List<PersonalTask> allTask = getAllTasks(tasks);
-    DateTime now = DateTime.now();
-    endedTasks = allTask.where((task) => task.enddate.isBefore(now)).toList();
-    urgentTasks = allTask
-        .where((task) =>
-            task.enddate.isAfter(now) &&
-            task.enddate.isBefore(now.add(const Duration(hours: 24))))
-        .toList();
-    threeDaysTasks = allTask
-        .where((task) =>
-            task.enddate.isAfter(now.add(const Duration(hours: 24))) &&
-            task.enddate.isBefore(now.add(const Duration(days: 3))))
-        .toList();
-    sevenDaysTasks = allTask
-        .where((task) => task.enddate.isAfter(now.add(const Duration(days: 3))))
-        .toList();
-    endedTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
-    urgentTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
-    threeDaysTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
-    sevenDaysTasks.sort((a, b) => a.enddate.compareTo(b.enddate));
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: Center(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                HomeScreen(user: widget.user)));
-                      },
-                      icon: const Icon(Icons.arrow_back, color: Colors.black)),
-                  const Spacer(),
-                  IconButton(
-                      onPressed: () {
-                        setState(() {
-                          timeView = !timeView;
-                        });
-                      },
-                      style: const ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
-                      icon: Icon(
-                        timeView ? Icons.access_time : Icons.menu_book,
-                        color: Colors.white,
-                      ))
-                ],
-              ),
-            ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (timeView) {
-                    return Row(
-                      children: [
-                        Expanded(
-                            child: PersonalTaskColumn(endedTasks, width: constraints.maxWidth / 4,
-                                columnName: 'Tareas finalizadas')),
-                        Expanded(
-                            child: PersonalTaskColumn(urgentTasks, width: constraints.maxWidth / 4,
-                                columnName: 'Tareas urgentes')),
-                        Expanded(
-                            child: PersonalTaskColumn(threeDaysTasks, width: constraints.maxWidth / 4,
-                                columnName: 'Próximos 3 días')),
-                        Expanded(
-                            child: PersonalTaskColumn(sevenDaysTasks, width: constraints.maxWidth / 4,
-                                columnName: '3 días o más')),
-                      ],
-                    );
-                  } else {
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                          children: widget.user.userCourses!.map((course) {
-                        final courseTasks = getAllTasks(tasks).where((courseTask) => courseTask.course == course.fullname).toList();
-                        return PersonalTaskColumn(
-                          courseTasks,
-                          width: constraints.maxWidth / 4,
-                          columnName: course.shortname
-                        );
-                      }).toList()),
-                    );
-                  }
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: FloatingActionButton(
-                      backgroundColor: Colors.blue,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(45)),
-                      onPressed: () {
-                        addTaskDialog();
-                      },
-                      child: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                      )),
-                ),
-              ],
-            )
-          ],
+    if (personalTasksDB == null) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+    return DefaultTabController(
+      initialIndex: 0,
+      length: 2,
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              TabBar(
+                  splashBorderRadius: BorderRadius.circular(50),
+                  indicatorPadding:
+                      const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  tabs: const [
+                    Tab(text: 'Pendientes'),
+                    Tab(text: 'Completadas')
+                  ]),
+              Expanded(
+                child: TabBarView(children: [
+                  SecondaryTabBar(
+                      tasks: undoneTasks,
+                      tabs: ['Hoy', 'Mañana', 'Esta semana', 'Todos'],
+                      done: false,
+                      personalTaskDatabase: personalTasksDB!,
+                      refreshTasks: loadTasks),
+                  SecondaryTabBar(
+                    tasks: doneTasks,
+                    tabs: ['Hoy', 'Últimos 7d', 'Este mes', 'Todos'],
+                    done: true,
+                    personalTaskDatabase: personalTasksDB!,
+                    refreshTasks: loadTasks,
+                  )
+                ]),
+              )
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CreateTaskPage(
+                            user: widget.user,
+                            refreshTasks: loadTasks,
+                          )));
+            },
+            backgroundColor: const Color(0xFF38373C),
+            shape: const CircleBorder(),
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+            )),
       ),
     );
   }
+}
 
-  addTaskDialog() {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setDialogState) {
-          return AlertDialog(
-            backgroundColor: Theme.of(context).primaryColor,
-            title: const Text('Nueva tarea',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                textAlign: TextAlign.center),
-            content: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _taskname,
-                    cursorColor: Colors.black,
-                    decoration: InputDecoration(
-                        hintText: 'Nombre de la tarea',
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 5),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: Colors.blue, width: 2)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _taskdescription,
-                    cursorColor: Colors.black,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
-                    minLines: 1,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                        hintText: 'Descripción de la tarea',
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 5),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: Colors.blue, width: 2)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownMenu(
-                    controller: _taskCourse,
-                    enableSearch: false,
-                    hintText: 'Seleccione curso',
-                    menuStyle: MenuStyle(
-                      backgroundColor: WidgetStatePropertyAll(
-                          Theme.of(context).primaryColor),
-                    ),
-                    inputDecorationTheme: InputDecorationTheme(
-                        outlineBorder: const BorderSide(color: Colors.black),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: Colors.blue, width: 2)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    onSelected: (value) {
-                      setState(() {
-                        taskCourse = value;
-                      });
-                      setDialogState(() {});
-                    },
-                    dropdownMenuEntries: UnmodifiableListView<MenuEntry>(
-                      widget.user.userCourses!.map<MenuEntry>(
-                          (Courses course) => MenuEntry(
-                              value: course.fullname, label: course.fullname)),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(10)),
-                          height: 45,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                  child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        taskStartDate != null
-                                            ? DateFormat('dd/MM/y')
-                                                .format(taskStartDate!)
-                                            : 'dd/mm/aaaa',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                Colors.black.withOpacity(0.5)),
-                                      ))),
-                              const VerticalDivider(),
-                              IconButton(
-                                  onPressed: () async {
-                                    DateTime? startDate = await showDatePicker(
-                                        context: context,
-                                        builder: (context, child) {
-                                          return Theme(
-                                              data: ThemeData(
-                                                  useMaterial3: false),
-                                              child: child ?? const SizedBox());
-                                        },
-                                        firstDate: DateTime.now(),
-                                        lastDate: taskEndDate ?? DateTime(2100),
-                                        locale: const Locale('es', 'ES'),
-                                        helpText: 'Fecha inicial',
-                                        confirmText: 'Aceptar',
-                                        cancelText: 'Cancelar');
-                                    setState(() {
-                                      taskStartDate = startDate;
-                                    });
-                                    setDialogState(() {});
-                                  },
-                                  icon: const Icon(Icons.event_available))
-                            ],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(10)),
-                          height: 45,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                  child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        taskEndDate != null
-                                            ? DateFormat('dd/MM/y')
-                                                .format(taskEndDate!)
-                                            : 'dd/mm/aaaa',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                Colors.black.withOpacity(0.5)),
-                                      ))),
-                              const VerticalDivider(),
-                              Align(
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                    onPressed: () async {
-                                      DateTime? endDate = await showDatePicker(
-                                          context: context,
-                                          builder: (context, child) {
-                                            return Theme(
-                                                data: ThemeData(
-                                                    useMaterial3: false),
-                                                child:
-                                                    child ?? const SizedBox());
-                                          },
-                                          firstDate:
-                                              taskStartDate ?? DateTime.now(),
-                                          lastDate: DateTime(2100),
-                                          locale: const Locale('es', 'ES'),
-                                          helpText: 'Fecha final',
-                                          confirmText: 'Aceptar',
-                                          cancelText: 'Cancelar');
-                                      setState(() {
-                                        taskEndDate = endDate;
-                                      });
-                                      setDialogState(() {});
-                                    },
-                                    icon: const Icon(Icons.event_busy)),
-                              )
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                      style: const ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.blue),
-                      ),
-                      onPressed: () async {
-                        final moodle = await MoodleApiService.getMoodleURL();
-                        personalTasksDB
-                            .createPersonalTask(PersonalTask(
-                                userid: widget.user.id,
-                                moodleid: moodle.toString(),
-                                name: _taskname.text,
-                                description: _taskdescription.text,
-                                course: _taskCourse.text,
-                                startdate: taskStartDate!,
-                                enddate: taskEndDate!))
-                            .then((onValue) {
-                          loadTasks();
-                        });
-                        clearTaskDialog();
-                        setDialogState(() {});
-                      },
-                      child: const Text('Crear tarea',
-                          style: TextStyle(color: Colors.white)))
-                ],
+class SecondaryTabBar extends StatefulWidget {
+  final List<PersonalTask> tasks;
+  final List<String> tabs;
+  final bool done;
+  final PersonalTaskDatabase personalTaskDatabase;
+  final Future<void> Function() refreshTasks;
+
+  const SecondaryTabBar(
+      {super.key,
+      required this.tasks,
+      required this.tabs,
+      required this.done,
+      required this.personalTaskDatabase,
+      required this.refreshTasks});
+
+  @override
+  State<SecondaryTabBar> createState() => _SecondaryTabBarState();
+}
+
+class _SecondaryTabBarState extends State<SecondaryTabBar>
+    with TickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TabBar.secondary(
+            isScrollable: true,
+            controller: _tabController,
+            physics: const NeverScrollableScrollPhysics(),
+            splashBorderRadius: BorderRadius.circular(50),
+            indicatorSize: TabBarIndicatorSize.tab,
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            tabs: widget.tabs
+                .map((tab) => Tab(
+                      text: tab,
+                    ))
+                .toList()),
+        Expanded(
+            child: TabBarView(
+                controller: _tabController,
+                children: widget.tabs.map((tab) {
+                  final filtered = widget.done
+                      ? filterDoneTask(tasks: widget.tasks, tab: tab)
+                      : filterUnDoneTask(tasks: widget.tasks, tab: tab);
+
+                  filtered.sort((a, b) => widget.done
+                      ? a.finishedat!.compareTo(b.finishedat!)
+                      : a.date.compareTo(b.date));
+
+                  return TabBarListView(
+                    tasks: filtered,
+                    done: widget.done,
+                    personalTaskDatabase: widget.personalTaskDatabase,
+                    refreshTasks: widget.refreshTasks,
+                  );
+                }).toList()))
+      ],
+    );
+  }
+}
+
+class TabBarListView extends StatelessWidget {
+  List<PersonalTask> tasks;
+  bool done;
+  final PersonalTaskDatabase personalTaskDatabase;
+  final Future<void> Function() refreshTasks;
+
+  TabBarListView(
+      {super.key,
+      required this.tasks,
+      required this.done,
+      required this.personalTaskDatabase,
+      required this.refreshTasks});
+
+  @override
+  Widget build(BuildContext context) {
+    if (tasks.isEmpty) {
+      return const Center(child: Text('No hay tareas disponibles'));
+    }
+
+    Map<DateTime, List<PersonalTask>> days = {};
+
+    for (var task in tasks) {
+      DateTime day = DateTime(
+          done ? task.finishedat!.year : task.date.year,
+          done ? task.finishedat!.month : task.date.month,
+          done ? task.finishedat!.day : task.date.day);
+
+      if (!days.containsKey(day)) {
+        days[day] = [];
+      }
+      days[day]!.add(task);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: days.keys.expand((day) {
+          final dayTasks = days[day]!;
+          return [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                DateFormat('EEEE-dd MMM', 'es').format(day),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
             ),
-          );
-        });
-      },
+            ...dayTasks.expand((task) {
+              return [
+                TaskCard(
+                    task: task,
+                    personalTasksDB: personalTaskDatabase,
+                    refreshTasks: refreshTasks),
+                const Divider()
+              ];
+            })
+          ];
+        }).toList(),
+      ),
     );
+  }
+}
+
+List<PersonalTask> filterDoneTask(
+    {required List<PersonalTask> tasks, required String tab}) {
+  final now = DateTime.now();
+
+  switch (tab) {
+    case 'Hoy':
+      return tasks.where((task) {
+        return task.finishedat!.year == now.year &&
+            task.finishedat!.month == now.month &&
+            task.finishedat!.day == now.day;
+      }).toList();
+    case 'Últimos 7d':
+      final week = now.subtract(const Duration(days: 7));
+      return tasks
+          .where((task) =>
+              task.finishedat!.isBefore(now) && task.finishedat!.isAfter(week))
+          .toList();
+    case 'Este mes':
+      return tasks
+          .where((task) =>
+              task.finishedat!.year == now.year &&
+              task.finishedat!.month == now.month)
+          .toList();
+    case 'Todos':
+      return tasks;
+    default:
+      return tasks;
+  }
+}
+
+List<PersonalTask> filterUnDoneTask(
+    {required List<PersonalTask> tasks, required String tab}) {
+  final now = DateTime.now();
+  switch (tab) {
+    case 'Hoy':
+      return tasks
+          .where((task) =>
+              task.date.year == now.year &&
+              task.date.month == now.month &&
+              task.date.day == now.day)
+          .toList();
+    case 'Mañana':
+      final tomorrow = now.add(const Duration(days: 1));
+      return tasks
+          .where((task) =>
+              task.date.year == tomorrow.year &&
+              task.date.month == tomorrow.month &&
+              task.date.day == tomorrow.day)
+          .toList();
+    case 'Esta semana':
+      final weekStart = now.subtract(Duration(days: now.weekday - 1));
+      final weekEnd = weekStart.add(const Duration(days: 6));
+      return tasks
+          .where((task) =>
+              task.date.isAfter(weekStart) && task.date.isBefore(weekEnd))
+          .toList();
+    case 'Todos':
+      return tasks;
+    default:
+      return tasks;
   }
 }

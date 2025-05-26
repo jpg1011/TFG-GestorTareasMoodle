@@ -11,8 +11,10 @@ import 'package:intl/intl.dart';
 
 class CreateTaskPage extends StatefulWidget {
   final UserModel user;
+  final Future<void> Function() refreshTasks;
 
-  const CreateTaskPage({super.key, required this.user});
+  const CreateTaskPage(
+      {super.key, required this.user, required this.refreshTasks});
 
   @override
   State<CreateTaskPage> createState() => _CreateTaskPageState();
@@ -286,6 +288,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                                 date: DateTime(date![0]!.year, date![0]!.month,
                                     date![0]!.day, time!.hour, time!.minute),
                                 priority: taskPriority!));
+                            await widget.refreshTasks();
                             Navigator.pop(context);
                           },
                           style: const ButtonStyle(
@@ -393,7 +396,29 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
 
   Future<TimeOfDay?> showTimeDatePicker() async {
     TimeOfDay? time = await showTimePicker(
-        context: context, initialTime: TimeOfDay.fromDateTime(DateTime.now()));
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(DateTime.now()),
+      builder: (context, child) {
+        return Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: Theme.of(context)
+                  .colorScheme
+                  .copyWith(primary: const Color(0xFF38373C)),
+              timePickerTheme: const TimePickerThemeData(
+                backgroundColor: Colors.white,
+                hourMinuteColor: Color(0xFF38373C),
+                hourMinuteTextColor: Colors.white,
+                dialHandColor: Colors.grey,
+                dialBackgroundColor: Color(0xFF38373C),
+                dialTextColor: Colors.white,
+              ),
+            ),
+            child: MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(alwaysUse24HourFormat: true),
+                child: child!));
+      },
+    );
 
     return time;
   }
