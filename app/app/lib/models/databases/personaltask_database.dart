@@ -36,7 +36,7 @@ class PersonalTaskDatabase {
       'date': personalTask.date.toLocal().toIso8601String(),
       'finishedat': personalTask.finishedat?.toLocal().toIso8601String(), 
       'done': personalTask.done,
-      'priority': personalTask.priority.name
+      'priority': personalTask.priority?.name
       }).eq('id', personalTask.id!).select();
   }
 

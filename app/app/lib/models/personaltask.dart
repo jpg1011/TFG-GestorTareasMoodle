@@ -5,12 +5,12 @@ class PersonalTask {
   int userid;
   String moodleid;
   String name;
-  String description;
+  String? description;
   String course;
   DateTime date;
   bool done;
   DateTime? finishedat;
-  TaskPriority priority;
+  TaskPriority? priority;
 
   PersonalTask(
       {
@@ -33,7 +33,7 @@ class PersonalTask {
       'description': description,
       'course': course,
       'date': date.toLocal().toIso8601String(),
-      'priority': priority.name,
+      'priority': priority?.name,
       'finishedat': finishedat?.toIso8601String(),
       'done': done
     };
@@ -48,7 +48,7 @@ class PersonalTask {
         description: map['description'] as String,
         course: map['course'] as String,
         date: DateTime.parse(map['date']),
-        priority: TaskPriority.values.byName(map['priority']),
+        priority: map['priority'] != null ? TaskPriority.values.byName(map['priority']) : null,
         finishedat: map['finishedat'] != null
             ? DateTime.parse(map['finishedat']).toLocal()
             : null,
