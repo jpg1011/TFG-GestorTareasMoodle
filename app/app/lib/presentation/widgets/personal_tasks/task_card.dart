@@ -62,26 +62,27 @@ class _TaskCardState extends State<TaskCard> {
                         ),
                       ),
                       const Spacer(),
-                      Flexible(
-                        child: Container(
-                          width: 70,
-                          height: 25,
-                          decoration: BoxDecoration(
-                              color: widget.task.priority.name == 'alta'
-                                  ? Colors.red.withOpacity(.9)
-                                  : widget.task.priority.name == 'media'
-                                      ? Colors.orange.withOpacity(.9)
-                                      : Colors.green.withOpacity(.9),
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Center(
-                              child: Text(
-                            widget.task.priority.name.toUpperCase(),
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          )),
-                        ),
-                      )
+                      if(widget.task.priority != null)
+                        Flexible(
+                          child: Container(
+                            width: 70,
+                            height: 25,
+                            decoration: BoxDecoration(
+                                color: widget.task.priority!.name == 'alta'
+                                    ? Colors.red.withOpacity(.9)
+                                    : widget.task.priority!.name == 'media'
+                                        ? Colors.orange.withOpacity(.9)
+                                        : Colors.green.withOpacity(.9),
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Center(
+                                child: Text(
+                              widget.task.priority!.name.toUpperCase(),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                          ),
+                        )
                     ],
                   ),
                 )
@@ -155,51 +156,53 @@ class _TaskCardState extends State<TaskCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                        Text(
-                          widget.task.description, 
-                          style: const TextStyle(
-                            fontSize: 16
-                          )
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(
-                          widget.task.course,
-                          style: const TextStyle(
-                            fontSize: 16
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(
-                          DateFormat("EEEE',' d 'de' MMMM 'de' yyyy 'a' 'las' HH:mm", 'es').format(widget.task.date)
-                        ),
-                        const SizedBox(height: 16.0),
-                        Container(
-                          height: 30,
-                          width: 70,
-                          decoration: BoxDecoration(
-                            color: widget.task.priority.name == 'alta'
-                                   ? Colors.red.withOpacity(.9)
-                                   : widget.task.priority.name == 'media'
-                                     ? Colors.orange.withOpacity(.9)
-                                     : Colors.green.withOpacity(.9),
-                            borderRadius: BorderRadius.circular(20)
-                          ),
-                          child: Center(
-                            child: Text(
-                              widget.task.priority.name.toUpperCase(),
+                          if(widget.task.description != null)
+                            Text(
+                              widget.task.description!, 
                               style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold
-                              ),
+                                fontSize: 16
+                              )
+                            ),
+                          const SizedBox(height: 16.0),
+                          Text(
+                            widget.task.course,
+                            style: const TextStyle(
+                              fontSize: 16
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(
-                          widget.task.done 
-                          ? 'Finalizada el ${DateFormat("EEEE',' d 'de' MMMM 'de' yyyy 'a' 'las' HH:mm", 'es').format(widget.task.finishedat!)}'
-                          : 'No finalizada'
-                        )
+                          const SizedBox(height: 16.0),
+                          Text(
+                            DateFormat("EEEE',' d 'de' MMMM 'de' yyyy 'a' 'las' HH:mm", 'es').format(widget.task.date)
+                          ),
+                          const SizedBox(height: 16.0),
+                          if(widget.task.priority != null)
+                            Container(
+                              height: 30,
+                              width: 70,
+                              decoration: BoxDecoration(
+                                color: widget.task.priority!.name == 'alta'
+                                      ? Colors.red.withOpacity(.9)
+                                      : widget.task.priority!.name == 'media'
+                                        ? Colors.orange.withOpacity(.9)
+                                        : Colors.green.withOpacity(.9),
+                                borderRadius: BorderRadius.circular(20)
+                              ),
+                              child: Center(
+                                child: Text(
+                                  widget.task.priority!.name.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 16.0),
+                          Text(
+                            widget.task.done 
+                            ? 'Finalizada el ${DateFormat("EEEE',' d 'de' MMMM 'de' yyyy 'a' 'las' HH:mm", 'es').format(widget.task.finishedat!)}'
+                            : 'No finalizada'
+                          )
                       ]
                       ),
                     ),
