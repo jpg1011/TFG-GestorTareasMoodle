@@ -133,10 +133,11 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Image(
-                  image: const AssetImage('assets/logoUBU.png'),
-                  width: size.width * 0.8,
+              const Center(
+                child: Expanded(
+                  child: Image(
+                    image: AssetImage('assets/logoUBU.png'),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 class AppTheme {
   ThemeData theme() {
     return ThemeData(
-      primaryColor: const Color(0xFF0D47A1),
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF0D47A1),
-         error: Colors.red
+        seedColor: Colors.white
       ),
       scaffoldBackgroundColor: Colors.white,
       tabBarTheme: TabBarTheme(
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
-          color: Color(0xFF212121),
+          color: Color(0xFF38373C),
           borderRadius: BorderRadius.circular(50),
         ),
         indicatorSize: TabBarIndicatorSize.tab,

@@ -69,7 +69,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   @override
   Widget build(BuildContext context) {
     if (personalTasksDB == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
