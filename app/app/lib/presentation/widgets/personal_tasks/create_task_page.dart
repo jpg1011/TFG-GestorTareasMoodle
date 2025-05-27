@@ -71,9 +71,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                     const Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                      child: Text('Nombre de la tarea',
-                          style: TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold)),
+                      child: CustomText(fieldName: 'Nombre de la tarea'),
                     ),
                     TextField(
                       controller: _taskname,
@@ -111,9 +109,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                     const Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                      child: Text('Curso',
-                          style: TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold)),
+                      child: CustomText(fieldName: 'Curso'),
                     ),
                     GestureDetector(
                       onTap: () async {
@@ -152,12 +148,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                     ),
                     const SizedBox(height: 16.0),
                     const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                      child: Text('Fecha',
-                          style: TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold)),
-                    ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.0, vertical: 6.0),
+                        child: CustomText(fieldName: 'Fecha')),
                     Container(
                       height: 56,
                       width: double.infinity,
@@ -279,17 +272,27 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                           onPressed: () async {
                             final moodle =
                                 await MoodleApiService.getMoodleURL();
-                            personalTasksDB.createPersonalTask(PersonalTask(
-                                userid: widget.user.id,
-                                moodleid: moodle.toString(),
-                                name: _taskname.text,
-                                description: _taskdescription.text,
-                                course: taskCourse!,
-                                date: DateTime(date![0]!.year, date![0]!.month,
-                                    date![0]!.day, time!.hour, time!.minute),
-                                priority: taskPriority!));
-                            await widget.refreshTasks();
-                            Navigator.pop(context);
+                            if (validateFields()) {
+                              personalTasksDB.createPersonalTask(PersonalTask(
+                                  userid: widget.user.id,
+                                  moodleid: moodle.toString(),
+                                  name: _taskname.text,
+                                  description: _taskdescription.text,
+                                  course: taskCourse!,
+                                  date: DateTime(
+                                      date![0]!.year,
+                                      date![0]!.month,
+                                      date![0]!.day,
+                                      time!.hour,
+                                      time!.minute),
+                                  priority: taskPriority));
+                              await widget.refreshTasks();
+                              Navigator.pop(context);
+                            }else{
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content:
+                                    Text('Rellene los campos obligatorios')));
+                            }
                           },
                           style: const ButtonStyle(
                             backgroundColor:
@@ -492,6 +495,36 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                       color: Colors.white, fontWeight: FontWeight.bold))),
         ),
       ),
+    );
+  }
+
+  bool validateFields() {
+    return _taskname.text.isEmpty ||
+            taskCourse == null ||
+            date == null ||
+            time == null
+        ? false
+        : true;
+  }
+}
+
+class CustomText extends StatelessWidget {
+  final String fieldName;
+  const CustomText({super.key, required this.fieldName});
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+          text: fieldName,
+          style: const TextStyle(
+              fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+          children: const [
+            TextSpan(
+                text: ' *',
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+          ]),
     );
   }
 }
