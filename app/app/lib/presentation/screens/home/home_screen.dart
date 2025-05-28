@@ -210,6 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _clear();
                           });
                           saveFilters();
+                          setDialogState(() {});
                         },
                         child: const Text(
                           'Borrar',
@@ -388,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             saveFilters();
                             setDialogState(() {});
                           }),
-                      const Text('Fecha apertura'),
+                      const Expanded(child: Text('Fecha apertura')),
                       Checkbox(
                           fillColor: WidgetStatePropertyAll(
                               Filters.closingDate ? Colors.blue : Colors.white),
@@ -404,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             saveFilters();
                             setDialogState(() {});
                           }),
-                      const Text('Fecha cierre')
+                      const Expanded(child: Text('Fecha cierre'))
                     ],
                   )
                 ]),
@@ -719,5 +720,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Filters.events = getEvents(Filters.selectedCourses);
     Filters.selectTask = true;
     Filters.selectQuiz = true;
+    Filters.ganttStartDate = null;
+    Filters.ganttEndDate = null;
+    Filters.openingDate = true;
+    Filters.closingDate = true;
   }
 }
