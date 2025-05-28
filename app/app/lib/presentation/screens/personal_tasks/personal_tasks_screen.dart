@@ -245,30 +245,32 @@ class TabBarListView extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: days.keys.expand((day) {
-          final dayTasks = days[day]!;
-          return [
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                DateFormat('EEEE-dd MMM', 'es').format(day),
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: days.keys.expand((day) {
+            final dayTasks = days[day]!;
+            return [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                  DateFormat('EEEE-dd MMM', 'es').format(day),
+                  style:
+                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
               ),
-            ),
-            ...dayTasks.expand((task) {
-              return [
-                TaskCard(
-                    task: task,
-                    personalTasksDB: personalTaskDatabase,
-                    refreshTasks: refreshTasks),
-                const Divider()
-              ];
-            })
-          ];
-        }).toList(),
+              ...dayTasks.expand((task) {
+                return [
+                  TaskCard(
+                      task: task,
+                      personalTasksDB: personalTaskDatabase,
+                      refreshTasks: refreshTasks),
+                  const Divider()
+                ];
+              })
+            ];
+          }).toList(),
+        ),
       ),
     );
   }
