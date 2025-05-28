@@ -7,6 +7,7 @@ import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/presentation/widgets/personal_tasks/create_task_page.dart';
 import 'package:app/presentation/widgets/personal_tasks/task_card.dart';
 import 'package:app/services/moodle_api_service.dart';
+import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
@@ -42,6 +43,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
 
   Future<void> loadTasks() async {
     final personalTasks = await personalTasksDB!.getPersonalTasks();
+    bool include = false;
 
     if (!mounted) return;
 
@@ -49,10 +51,55 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     List<PersonalTask> undone = [];
 
     for (var task in personalTasks) {
-      if (task['done']) {
-        done.add(PersonalTask.fromMap(task));
+      if (Filters.selectedCourses.isNotEmpty) {
+        if (Filters.selectedCourses.contains(widget.user.userCourses!
+            .where((course) => course.shortname == task['course']))) {
+          if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
+            include =
+                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date'])) &&
+                    Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+          } else if (Filters.ganttStartDate == null &&
+              Filters.ganttEndDate != null) {
+            include =
+                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date']));
+          } else if (Filters.ganttStartDate != null &&
+              Filters.ganttEndDate == null) {
+            include = Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+          } else {
+            include = true;
+          }
+
+          if (include) {
+            if (task['done']) {
+              done.add(PersonalTask.fromMap(task));
+            } else {
+              undone.add(PersonalTask.fromMap(task));
+            }
+          }
+        }
       } else {
-        undone.add(PersonalTask.fromMap(task));
+        if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
+            include =
+                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date'])) &&
+                    Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+          } else if (Filters.ganttStartDate == null &&
+              Filters.ganttEndDate != null) {
+            include =
+                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date']));
+          } else if (Filters.ganttStartDate != null &&
+              Filters.ganttEndDate == null) {
+            include = Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+          } else {
+            include = true;
+          }
+
+          if (include) {
+            if (task['done']) {
+              done.add(PersonalTask.fromMap(task));
+            } else {
+              undone.add(PersonalTask.fromMap(task));
+            }
+          }
       }
     }
     setState(() {
@@ -255,8 +302,8 @@ class TabBarListView extends StatelessWidget {
                 padding: const EdgeInsets.all(12.0),
                 child: Text(
                   DateFormat('EEEE-dd MMM', 'es').format(day),
-                  style:
-                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               ),
               ...dayTasks.expand((task) {
