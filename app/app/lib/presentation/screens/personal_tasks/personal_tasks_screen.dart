@@ -53,7 +53,7 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     for (var task in personalTasks) {
       if (Filters.selectedCourses.isNotEmpty) {
         if (Filters.selectedCourses.contains(widget.user.userCourses!
-            .where((course) => course.shortname == task['course']))) {
+            .firstWhere((course) => course.shortname == task['course']))) {
           if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
             include =
                 Filters.ganttStartDate!.isBefore(DateTime.parse(task['date'])) &&
