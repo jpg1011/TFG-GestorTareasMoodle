@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   secondaryAnimation) =>
                               GanttChartScreen(
                                   user: widget.user,
-                                  events: getEvents(Filters.selectedCourses)),
+                                  events: getEvents(Filters.selectedCourses, startDate: Filters.ganttStartDate, endDate: Filters.ganttEndDate)),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             return SlideTransition(
@@ -597,13 +597,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     List<String> coursesids = prefs.getStringList('coursesids') ?? [];
 
-    if (coursesids.isEmpty) {
-      Filters.selectedCourses = [];
-    } else {
-      for (var courseid in coursesids) {
-        Filters.selectedCourses.add(widget.user.userCourses!
-            .firstWhere((course) => course.id == int.parse(courseid)));
-      }
+    Filters.selectedCourses = [];
+
+    for (var courseid in coursesids) {
+      Filters.selectedCourses.add(widget.user.userCourses!
+          .firstWhere((course) => course.id == int.parse(courseid)));
     }
 
     Filters.selectTask = prefs.getBool('selectTask') ?? true;
