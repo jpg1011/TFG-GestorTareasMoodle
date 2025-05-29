@@ -273,7 +273,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                             final moodle =
                                 await MoodleApiService.getMoodleURL();
                             if (validateFields()) {
-                              personalTasksDB.createPersonalTask(PersonalTask(
+                              await personalTasksDB.createPersonalTask(PersonalTask(
                                   userid: widget.user.id,
                                   moodleid: moodle.toString(),
                                   name: _taskname.text,
