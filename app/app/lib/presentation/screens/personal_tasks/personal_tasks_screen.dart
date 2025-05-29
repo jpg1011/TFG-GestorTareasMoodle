@@ -45,26 +45,27 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     final personalTasks = await personalTasksDB!.getPersonalTasks();
     bool include = false;
 
-    if (!mounted) return;
-
     List<PersonalTask> done = [];
     List<PersonalTask> undone = [];
 
     for (var task in personalTasks) {
+      DateTime date = DateTime.parse(task['date']);
       if (Filters.selectedCourses.isNotEmpty) {
         if (Filters.selectedCourses.contains(widget.user.userCourses!
-            .firstWhere((course) => course.shortname == task['course']))) {
+            .firstWhere((course) => course.shortname == task['course']))) { 
           if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
-            include =
-                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date'])) &&
-                    Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+            include = (Filters.ganttStartDate!
+                        .isBefore(date) ||
+                    Filters.ganttStartDate!.isAtSameMomentAs(date)) &&
+                (Filters.ganttEndDate!.isAfter(date) || Filters.ganttEndDate!.isAtSameMomentAs(date));
           } else if (Filters.ganttStartDate == null &&
               Filters.ganttEndDate != null) {
             include =
-                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date']));
+                Filters.ganttEndDate!.isBefore(date) || Filters.ganttEndDate!.isAtSameMomentAs(date);
           } else if (Filters.ganttStartDate != null &&
               Filters.ganttEndDate == null) {
-            include = Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+            include =
+                Filters.ganttStartDate!.isAfter(date) || Filters.ganttStartDate!.isAtSameMomentAs(date);
           } else {
             include = true;
           }
@@ -79,27 +80,29 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
         }
       } else {
         if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
-            include =
-                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date'])) &&
-                    Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+            include = (Filters.ganttStartDate!
+                        .isBefore(date) ||
+                    Filters.ganttStartDate!.isAtSameMomentAs(date)) &&
+                (Filters.ganttEndDate!.isAfter(date) || Filters.ganttEndDate!.isAtSameMomentAs(date));
           } else if (Filters.ganttStartDate == null &&
               Filters.ganttEndDate != null) {
             include =
-                Filters.ganttStartDate!.isBefore(DateTime.parse(task['date']));
+                Filters.ganttEndDate!.isBefore(date) || Filters.ganttEndDate!.isAtSameMomentAs(date);
           } else if (Filters.ganttStartDate != null &&
               Filters.ganttEndDate == null) {
-            include = Filters.ganttEndDate!.isAfter(DateTime.parse(task['date']));
+            include =
+                Filters.ganttStartDate!.isAfter(date) || Filters.ganttStartDate!.isAtSameMomentAs(date);
           } else {
             include = true;
           }
 
-          if (include) {
-            if (task['done']) {
-              done.add(PersonalTask.fromMap(task));
-            } else {
-              undone.add(PersonalTask.fromMap(task));
-            }
+        if (include) {
+          if (task['done']) {
+            done.add(PersonalTask.fromMap(task));
+          } else {
+            undone.add(PersonalTask.fromMap(task));
           }
+        }
       }
     }
     setState(() {
