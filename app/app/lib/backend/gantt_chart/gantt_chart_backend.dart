@@ -86,7 +86,7 @@ class GanttChartBackend {
     ];
     int index = 0;
     for (var course in user.userCourses!) {
-      if (index < 20) {
+      if (index < carrouselColors.length) {
         coursesColors[course.id] = carrouselColors[index];
         index++;
       } else {
