@@ -66,7 +66,7 @@ class _GanttViewState extends State<GanttView> {
           ),
         ),
         SlidingUpPanel(
-          minHeight: 60,
+          minHeight: 45,
           isDraggable: !sliderInUse,
           panelBuilder: (sc) => _panel(sc),
           borderRadius: const BorderRadius.only(
@@ -82,7 +82,7 @@ class _GanttViewState extends State<GanttView> {
       controller: sc,
       children: [
         SizedBox(
-          height: 60,
+          height: 50,
           child: Center(
             child: Container(
               height: 5,
