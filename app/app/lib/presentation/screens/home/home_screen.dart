@@ -1,8 +1,10 @@
+import 'package:app/backend/home/home_backend.dart';
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
 import 'package:app/presentation/screens/login/login_screen.dart';
 import 'package:app/presentation/screens/personal_tasks/personal_tasks_screen.dart';
+import 'package:app/presentation/widgets/home/Filters/custom_chip.dart';
 import 'package:app/presentation/widgets/home/home_features_botton.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:app/utils/constants.dart';
@@ -22,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final HomeBackend homeBackend;
   String getFirstname() {
     final name = widget.user.fullname.split(', ');
     return name.last;
@@ -30,7 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    loadSavedFilters();
+    homeBackend = HomeBackend(user: widget.user);
+    homeBackend.loadSavedFilters();
   }
 
   @override
@@ -117,11 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation,
-                                  secondaryAnimation) =>
-                              GanttChartScreen(
-                                  user: widget.user,
-                                  events: getEvents(Filters.selectedCourses, startDate: Filters.ganttStartDate, endDate: Filters.ganttEndDate)),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  GanttChartScreen(
+                                      user: widget.user,
+                                      events: homeBackend.getEvents(Filters.selectedCourses,
+                                          startDate: Filters.ganttStartDate,
+                                          endDate: Filters.ganttEndDate)),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             return SlideTransition(
@@ -207,9 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             overlayColor: WidgetStatePropertyAll(Colors.white)),
                         onPressed: () {
                           setState(() {
-                            _clear();
+                            homeBackend.clear();
                           });
-                          saveFilters();
+                          homeBackend.saveFilters();
                           setDialogState(() {});
                         },
                         child: const Text(
@@ -297,11 +303,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 cancelText: 'Cancelar');
                             setState(() {
                               Filters.ganttStartDate = startDate;
-                              Filters.events = getEvents(
+                              Filters.events = homeBackend.getEvents(
                                   Filters.selectedCourses,
                                   startDate: Filters.ganttStartDate,
                                   endDate: Filters.ganttEndDate);
-                              saveFilters();
+                              homeBackend.saveFilters();
                               setDialogState(() {});
                             });
                           },
@@ -345,11 +351,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                             setState(() {
                               Filters.ganttEndDate = endDate;
-                              Filters.events = getEvents(
+                              Filters.events = homeBackend.getEvents(
                                   Filters.selectedCourses,
                                   startDate: Filters.ganttStartDate,
                                   endDate: Filters.ganttEndDate);
-                              saveFilters();
+                              homeBackend.saveFilters();
                               setDialogState(() {});
                             });
                           },
@@ -383,10 +389,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (value != null) {
                                 Filters.openingDate = value;
                                 Filters.events =
-                                    getEvents(Filters.selectedCourses);
+                                    homeBackend.getEvents(Filters.selectedCourses);
                               }
                             });
-                            saveFilters();
+                            homeBackend.saveFilters();
                             setDialogState(() {});
                           }),
                       const Expanded(child: Text('Fecha apertura')),
@@ -399,10 +405,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (value != null) {
                                 Filters.closingDate = value;
                                 Filters.events =
-                                    getEvents(Filters.selectedCourses);
+                                    homeBackend.getEvents(Filters.selectedCourses);
                               }
                             });
-                            saveFilters();
+                            homeBackend.saveFilters();
                             setDialogState(() {});
                           }),
                       const Expanded(child: Text('Fecha cierre'))
@@ -446,35 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     : SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: _reorderCourses(widget.user.userCourses!)
+                          children: homeBackend.reorderCourses(widget.user.userCourses!)
                               .map((course) {
-                            return FilterChip(
-                                checkmarkColor: Colors.white,
-                                backgroundColor: Colors.white,
-                                side: BorderSide.none,
-                                label: !Filters.selectedCourses.contains(course)
-                                    ? Text(course.fullname,
-                                        style: const TextStyle(
-                                            color: Colors.black))
-                                    : Text(course.fullname,
-                                        style: const TextStyle(
-                                            color: Colors.white)),
-                                selected:
-                                    Filters.selectedCourses.contains(course),
-                                selectedColor: Colors.blue,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      Filters.selectedCourses.add(course);
-                                    } else {
-                                      Filters.selectedCourses.remove(course);
-                                    }
-                                    Filters.events =
-                                        getEvents(Filters.selectedCourses);
-                                  });
-                                  saveFilters();
-                                  setDialogState(() {});
-                                });
+                            return CustomChip(course: course, user: widget.user);
                           }).toList(),
                         ),
                       ));
@@ -522,9 +502,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           setState(() {
                             Filters.selectTask = !Filters.selectTask;
-                            Filters.events = getEvents(Filters.selectedCourses);
+                            Filters.events = homeBackend.getEvents(Filters.selectedCourses);
                           });
-                          saveFilters();
+                          homeBackend.saveFilters();
                           setDialogState(() {});
                         },
                         icon: Icon(
@@ -555,7 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           setState(() {
                             Filters.selectQuiz = !Filters.selectQuiz;
-                            Filters.events = getEvents(Filters.selectedCourses);
+                            Filters.events = homeBackend.getEvents(Filters.selectedCourses);
                           });
                           setDialogState(() {});
                         },
@@ -568,159 +548,5 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         });
-  }
-
-  Future<void> saveFilters() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    List<String> coursesids = [];
-
-    for (var course in Filters.selectedCourses) {
-      coursesids.add(course.id.toString());
-    }
-    prefs.setStringList('coursesids', coursesids);
-    prefs.setBool('selectTask', Filters.selectTask);
-    prefs.setBool('selectQuiz', Filters.selectQuiz);
-    if (Filters.ganttStartDate != null) {
-      prefs.setString(
-          'ganttStartDate', Filters.ganttStartDate!.toIso8601String());
-    }
-    if (Filters.ganttEndDate != null) {
-      prefs.setString('ganttEndDate', Filters.ganttEndDate!.toIso8601String());
-    }
-    prefs.setBool('openingDate', Filters.openingDate);
-    prefs.setBool('closingDate', Filters.closingDate);
-  }
-
-  Future<void> loadSavedFilters() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    List<String> coursesids = prefs.getStringList('coursesids') ?? [];
-
-    Filters.selectedCourses = [];
-
-    for (var courseid in coursesids) {
-      Filters.selectedCourses.add(widget.user.userCourses!
-          .firstWhere((course) => course.id == int.parse(courseid)));
-    }
-
-    Filters.selectTask = prefs.getBool('selectTask') ?? true;
-    Filters.selectQuiz = prefs.getBool('selectQuiz') ?? true;
-
-    if (prefs.getString('ganttStartDate') != null) {
-      Filters.ganttStartDate =
-          DateTime.parse(prefs.getString('ganttStartDate')!);
-    } else {
-      Filters.ganttStartDate = null;
-    }
-
-    if (prefs.getString('ganttEndDate') != null) {
-      Filters.ganttEndDate = DateTime.parse(prefs.getString('ganttEndDate')!);
-    } else {
-      Filters.ganttEndDate = null;
-    }
-
-    Filters.openingDate = prefs.getBool('openingDate') ?? true;
-    Filters.closingDate = prefs.getBool('closingDate') ?? true;
-  }
-
-  List<dynamic> getEvents(List<Courses> selectedCourses,
-      {DateTime? startDate, DateTime? endDate}) {
-    List<dynamic> events = [];
-
-    final coursesToShow = selectedCourses.isEmpty
-        ? widget.user.userCourses!
-        : widget.user.userCourses!
-            .where((course) => selectedCourses.contains(course));
-
-    for (var course in coursesToShow) {
-      if (course.assignments != null && Filters.selectTask) {
-        List<Assign> orderedAssignments =
-            reorderAssignments(course.assignments!);
-        for (var event in orderedAssignments) {
-          DateTime eventDate =
-              DateTime.fromMillisecondsSinceEpoch(event.duedate * 1000);
-          inRange(startDate, endDate, eventDate, events, event);
-        }
-      }
-
-      if (course.quizzes != null && Filters.selectQuiz) {
-        List<Quiz> orderedQuizzes = reorderQuizzes(course.quizzes!);
-        for (var event in orderedQuizzes) {
-          DateTime eventDate =
-              DateTime.fromMillisecondsSinceEpoch(event.timeclose * 1000);
-          inRange(startDate, endDate, eventDate, events, event);
-        }
-      }
-    }
-
-    return events;
-  }
-
-  void inRange(DateTime? startDate, DateTime? endDate, DateTime eventDate,
-      List<dynamic> events, dynamic event) {
-    bool include = false;
-    if (startDate != null && endDate != null) {
-      include = (eventDate.isAfter(startDate) ||
-              eventDate.isAtSameMomentAs(startDate)) &&
-          (eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate));
-    } else if (startDate != null && endDate == null) {
-      include =
-          eventDate.isAfter(startDate) || eventDate.isAtSameMomentAs(startDate);
-    } else if (startDate == null && endDate != null) {
-      include =
-          eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate);
-    } else if (startDate == null && endDate == null) {
-      include = true;
-    }
-
-    if (include) {
-      if (Filters.openingDate) {
-        final open = event.runtimeType == Assign
-            ? event.allowsubmissionsfromdate != 0
-            : event.timeopen != 0;
-        if (!open) {
-          return;
-        }
-      }
-      if (Filters.closingDate) {
-        final close = event.runtimeType == Assign
-            ? event.duedate != 0
-            : event.timeclose != 0;
-        if (!close) {
-          return;
-        }
-      }
-      events.add(event);
-    }
-  }
-
-  List<Assign> reorderAssignments(List<Assign> listToOrder) {
-    List<Assign> orderedList = List.from(listToOrder);
-    orderedList.sort((a, b) => a.duedate.compareTo(b.duedate));
-    return orderedList;
-  }
-
-  List<Quiz> reorderQuizzes(List<Quiz> listToOrder) {
-    List<Quiz> orderedList = List.from(listToOrder);
-    orderedList.sort((a, b) => a.timeclose.compareTo(b.timeclose));
-    return orderedList;
-  }
-
-  List<Courses> _reorderCourses(List<Courses> coursesToOrder) {
-    List<Courses> orderCourses = List.from(coursesToOrder);
-    orderCourses.sort((a, b) => a.fullname.compareTo(b.fullname));
-    return orderCourses;
-  }
-
-  _clear() {
-    Filters.selectedCourses = [];
-    Filters.events = getEvents(Filters.selectedCourses);
-    Filters.selectTask = true;
-    Filters.selectQuiz = true;
-    Filters.ganttStartDate = null;
-    Filters.ganttEndDate = null;
-    Filters.openingDate = true;
-    Filters.closingDate = true;
   }
 }
