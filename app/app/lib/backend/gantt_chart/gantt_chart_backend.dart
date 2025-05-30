@@ -31,7 +31,7 @@ class GanttChartBackend {
         label: event.name,
         description: user.userCourses!
             .firstWhere((course) => course.id == event.course)
-            .fullname,
+            .shortname,
         icon: Icons.task,
         color: coursesColors[event.course],
         startDate: getStartDate(
@@ -46,7 +46,7 @@ class GanttChartBackend {
           label: event.name,
           description: user.userCourses!
               .firstWhere((course) => course.id == event.course)
-              .fullname,
+              .shortname,
           icon: Icons.fact_check,
           color: coursesColors[event.course],
           startDate: getStartDate(

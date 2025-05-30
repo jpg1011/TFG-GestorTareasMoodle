@@ -237,7 +237,9 @@ class _MaterialGanttChartState extends State<MaterialGanttChart>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                        maxLines: null,
+                        overflow: TextOverflow.visible,
                         point.label,
                         style: const TextStyle(
                           fontSize: 20,

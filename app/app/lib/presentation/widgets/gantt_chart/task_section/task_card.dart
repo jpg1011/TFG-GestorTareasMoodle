@@ -51,7 +51,7 @@ class _TaskCardState extends State<TaskCard> {
               Column(
                 children: [
                   Expanded(
-                    flex:4, 
+                    flex: 4, 
                     child: Container(
                       alignment: Alignment.center,
                       color: widget.taskColor,
@@ -63,7 +63,15 @@ class _TaskCardState extends State<TaskCard> {
                     child: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(widget.event.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis,),
+                      child: Text(
+                        widget.event.name, 
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500
+                        ), 
+                        overflow: TextOverflow.visible,
+                        maxLines: null,
+                        softWrap: true,
+                      ),
                     )
                   )
                 ],
@@ -73,11 +81,6 @@ class _TaskCardState extends State<TaskCard> {
         ),
       ),
     );
-  }
-
-  void onTapCard(){
-
-  
   }
 }
 

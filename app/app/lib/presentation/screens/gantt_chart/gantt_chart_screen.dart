@@ -45,7 +45,7 @@ class _GanttChartScreenState extends State<GanttChartScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
               tabs: const [
                  Tab(text: 'Gantt', icon: Icon(Icons.view_timeline), height: 50),
-                 Tab(text: 'Tareas', icon: Icon(Icons.list_alt), height: 50)
+                 Tab(text: 'Actividades', icon: Icon(Icons.list_alt), height: 50)
               ]),
             Expanded(
                 child: TabBarView(

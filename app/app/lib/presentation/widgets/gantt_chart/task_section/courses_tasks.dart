@@ -30,7 +30,9 @@ class _CoursesTasksState extends State<CoursesTasks> {
           GridView.count(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            crossAxisCount: 2,
+            crossAxisCount: 1,
+            childAspectRatio: 2,
+            
             children: List.generate(widget.courseevents.length, (index) {
               return TaskCard(
                 event: widget.courseevents[index],

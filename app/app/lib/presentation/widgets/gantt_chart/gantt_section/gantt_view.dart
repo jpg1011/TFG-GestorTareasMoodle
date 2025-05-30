@@ -124,7 +124,7 @@ class _GanttViewState extends State<GanttView> {
         const Padding(
           padding: EdgeInsets.all(8.0),
           child: Text(
-            'Espacio vertical entre tareas',
+            'Espacio vertical entre actividades',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
