@@ -52,20 +52,20 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
       DateTime date = DateTime.parse(task['date']);
       if (Filters.selectedCourses.isNotEmpty) {
         if (Filters.selectedCourses.contains(widget.user.userCourses!
-            .firstWhere((course) => course.shortname == task['course']))) { 
+            .firstWhere((course) => course.shortname == task['course']))) {
           if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
-            include = (Filters.ganttStartDate!
-                        .isBefore(date) ||
-                    Filters.ganttStartDate!.isAtSameMomentAs(date)) &&
-                (Filters.ganttEndDate!.isAfter(date) || Filters.ganttEndDate!.isAtSameMomentAs(date));
+            include = (Filters.ganttStartDate!.isBefore(date) ||
+                    sameDay(Filters.ganttStartDate!, date)) &&
+                (Filters.ganttEndDate!.isAfter(date) ||
+                    sameDay(Filters.ganttEndDate!, date));
           } else if (Filters.ganttStartDate == null &&
               Filters.ganttEndDate != null) {
-            include =
-                Filters.ganttEndDate!.isBefore(date) || Filters.ganttEndDate!.isAtSameMomentAs(date);
+            include = Filters.ganttEndDate!.isBefore(date) ||
+                sameDay(Filters.ganttEndDate!, date);
           } else if (Filters.ganttStartDate != null &&
               Filters.ganttEndDate == null) {
-            include =
-                Filters.ganttStartDate!.isAfter(date) || Filters.ganttStartDate!.isAtSameMomentAs(date);
+            include = Filters.ganttStartDate!.isAfter(date) ||
+                sameDay(Filters.ganttStartDate!, date);
           } else {
             include = true;
           }
@@ -80,21 +80,21 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
         }
       } else {
         if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
-            include = (Filters.ganttStartDate!
-                        .isBefore(date) ||
-                    Filters.ganttStartDate!.isAtSameMomentAs(date)) &&
-                (Filters.ganttEndDate!.isAfter(date) || Filters.ganttEndDate!.isAtSameMomentAs(date));
-          } else if (Filters.ganttStartDate == null &&
-              Filters.ganttEndDate != null) {
-            include =
-                Filters.ganttEndDate!.isBefore(date) || Filters.ganttEndDate!.isAtSameMomentAs(date);
-          } else if (Filters.ganttStartDate != null &&
-              Filters.ganttEndDate == null) {
-            include =
-                Filters.ganttStartDate!.isAfter(date) || Filters.ganttStartDate!.isAtSameMomentAs(date);
-          } else {
-            include = true;
-          }
+          include = (Filters.ganttStartDate!.isBefore(date) ||
+                  sameDay(Filters.ganttStartDate!, date)) &&
+              (Filters.ganttEndDate!.isAfter(date) ||
+                  sameDay(Filters.ganttEndDate!, date));
+        } else if (Filters.ganttStartDate == null &&
+            Filters.ganttEndDate != null) {
+          include = Filters.ganttEndDate!.isBefore(date) ||
+              sameDay(Filters.ganttEndDate!, date);
+        } else if (Filters.ganttStartDate != null &&
+            Filters.ganttEndDate == null) {
+          include = Filters.ganttStartDate!.isAfter(date) ||
+              sameDay(Filters.ganttStartDate!, date);
+        } else {
+          include = true;
+        }
 
         if (include) {
           if (task['done']) {
@@ -109,6 +109,10 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
       doneTasks = done;
       undoneTasks = undone;
     });
+  }
+
+  bool sameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day; 
   }
 
   @override

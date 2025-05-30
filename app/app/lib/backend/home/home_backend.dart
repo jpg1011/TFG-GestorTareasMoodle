@@ -70,8 +70,7 @@ class HomeBackend {
 
     final coursesToShow = selectedCourses.isEmpty
         ? user.userCourses!
-        : user.userCourses!
-            .where((course) => selectedCourses.contains(course));
+        : user.userCourses!.where((course) => selectedCourses.contains(course));
 
     for (var course in coursesToShow) {
       if (course.assignments != null && Filters.selectTask) {
@@ -102,14 +101,14 @@ class HomeBackend {
     bool include = false;
     if (startDate != null && endDate != null) {
       include = (eventDate.isAfter(startDate) ||
-              eventDate.isAtSameMomentAs(startDate)) &&
-          (eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate));
+              sameDay(startDate, eventDate)) &&
+          (eventDate.isBefore(endDate) || sameDay(endDate, eventDate));
     } else if (startDate != null && endDate == null) {
       include =
-          eventDate.isAfter(startDate) || eventDate.isAtSameMomentAs(startDate);
+          eventDate.isAfter(startDate) || sameDay(startDate, eventDate);
     } else if (startDate == null && endDate != null) {
       include =
-          eventDate.isBefore(endDate) || eventDate.isAtSameMomentAs(endDate);
+          eventDate.isBefore(endDate) || sameDay(endDate, eventDate);
     } else if (startDate == null && endDate == null) {
       include = true;
     }
@@ -133,6 +132,12 @@ class HomeBackend {
       }
       events.add(event);
     }
+  }
+
+  bool sameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   List<Assign> reorderAssignments(List<Assign> listToOrder) {
