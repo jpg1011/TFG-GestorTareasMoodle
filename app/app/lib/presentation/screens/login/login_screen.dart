@@ -1,12 +1,7 @@
-import 'dart:convert';
-import 'dart:math';
-
+import 'package:app/backend/login/login_backend.dart';
+import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/presentation/widgets/login/login_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:app/models/user_model.dart';
-import 'package:app/presentation/screens/home/home_screen.dart';
-import 'package:app/services/moodle_api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -22,101 +17,33 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final TextEditingController _urlMoodle = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  String savedMoodle = 'URL Moodle';
+  String savedMoodle = 'https://moodleexample.com';
   bool saveEmailOption = false;
   bool loging = false;
   bool? isValid;
   bool loading = false;
   String? _loginError;
+  final LoginBackend _loginBackend = LoginBackend();
 
   @override
   void initState() {
     super.initState();
-    chargeMoodle();
-    loadSavedEmail();
-  }
-
-  Future<void> chargeMoodle() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedURL = prefs.getString('moodleConection');
-    setState(() {
-      savedMoodle = savedURL ?? 'https://moodleexample.com';
+    _loginBackend.chargeMoodle().then((moodle) {
+      setState(() {
+        savedMoodle = moodle;
+      });
     });
-  }
-
-  Future<void> saveMoodle() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('moodleConection', _urlMoodle.text);
-  }
-
-  Future<void> saveEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('email', _emailController.text);
-  }
-
-  Future<bool> checkMoodleServer(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        return response.body.toLowerCase().contains('moodle');
-      } else {
-        throw Exception('Server status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<void> loginSetup() async {
-    setState(() { loging = true; _loginError = null; });
-    try{
-      await MoodleApiService.login(_emailController.text, _passwordController.text);
-    }catch(e){
-      setState(() { loging = false; _loginError = 'Correo o contraseña incorrectos'; });
-      return;
-    }
-
-    if (saveEmailOption) await saveEmail();
-    var userInfo = await MoodleApiService.getUserInfo();
-    final UserModel user = UserModel.fromJson(userInfo);
-
-    var userCourses =
-        await MoodleApiService.getUserCourses(userInfo['id'] as int);
-    user.userCourses = userCourses;
-    for (var course in user.userCourses!) {
-      var assignments =
-          await MoodleApiService.getCourseAssignments(course.id);
-      course.assignments = assignments;
-      for (var assign in course.assignments!) {
-        assign.submission =
-            await MoodleApiService.getAssignSubmissionStatus(assign.id);
-      }
-    }
-
-    for (var course in user.userCourses!) {
-      var quizzes = await MoodleApiService.getCourseQuizzes(course.id);
-      course.quizzes = quizzes;
-      for (var quiz in course.quizzes!) {
-        quiz.quizgrade =
-            await MoodleApiService.getQuizSubmissionStatus(quiz.id);
-      }
-    }
-
-    setState(() {
-      loading = false;
+    _loginBackend.loadSavedEmail().then((email) {
+      setState(() {
+        if (email != null) {
+          _emailController.text = email;
+        }
+      });
     });
-
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => HomeScreen(user: user)));
-  }
-
-  Future<void> loadSavedEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('email') ?? '';
-    setState(() {
-      _emailController.text = savedEmail;
-      saveEmailOption = savedEmail.isNotEmpty;
+    _loginBackend.getSaveOption().then((option) {
+      setState(() {
+        saveEmailOption = option;
+      });
     });
   }
 
@@ -178,8 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               if (_loginError != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                  child: Text(_loginError!, style: const TextStyle(color: Colors.red)),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  child: Text(_loginError!,
+                      style: const TextStyle(color: Colors.red)),
                 ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -209,14 +138,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     onChanged: (bool? value) async {
                       if (value == null) return;
                       final prefs = await SharedPreferences.getInstance();
+                      prefs.setBool('saveEmail', value);
                       setState(() {
                         saveEmailOption = value;
                       });
-                      if (saveEmailOption) {
-                        await prefs.setString('email', _emailController.text);
-                      } else {
-                        await prefs.remove('email');
-                      }
+                      if (!saveEmailOption) await prefs.remove('email');
                     },
                   ),
                   const Text('Recordar correo universitario',
@@ -234,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor:
                             WidgetStatePropertyAll(Color(0xFF212121))),
                     onPressed: () async {
-                      await loginSetup();
+                      await onLogin();
                     },
                     child: !loging
                         ? const Text('Iniciar sesión',
@@ -265,8 +191,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  void login() {}
 
   Future<void> selectMoodle() {
     return showModalBottomSheet(
@@ -313,11 +237,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                   backgroundColor: WidgetStatePropertyAll(
                                       Color(0xFF212121))),
                               onPressed: () async {
-                                isValid =
-                                    await checkMoodleServer(_urlMoodle.text);
+                                isValid = await _loginBackend
+                                    .checkMoodleServer(_urlMoodle.text);
                                 if (isValid != null && isValid!) {
-                                  await saveMoodle();
-                                  await chargeMoodle();
+                                  await _loginBackend.saveMoodle(
+                                      urlMoodle: _urlMoodle);
+                                  final newMoodle =
+                                      await _loginBackend.chargeMoodle();
+                                  setState(() {
+                                    savedMoodle = newMoodle;
+                                  });
                                   _urlMoodle.clear();
                                 }
                                 setModalState(() {});
@@ -339,5 +268,27 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
     );
+  }
+
+  Future<void> onLogin() async {
+    setState(() {
+      loging = true;
+      _loginError = null;
+    });
+
+    try {
+      final user = await _loginBackend.loginSetup(
+          email: _emailController.text,
+          password: _passwordController.text,
+          saveEmailOption: saveEmailOption);
+
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => HomeScreen(user: user)));
+    } catch (e) {
+      setState(() {
+        _loginError = 'Correo o contraseña incorrectos';
+        loging = false;
+      });
+    }
   }
 }
