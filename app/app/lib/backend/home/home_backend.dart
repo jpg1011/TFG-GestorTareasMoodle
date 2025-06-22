@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:app/models/assign.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/quiz.dart';
@@ -10,58 +12,60 @@ class HomeBackend {
 
   HomeBackend({required this.user});
 
-  Future<void> saveFilters() async {
+  Future<void> saveFilters(String useremail) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    List<String> coursesids = [];
+    List<String> coursesids =
+        Filters.selectedCourses.map((course) => course.id.toString()).toList();
 
-    for (var course in Filters.selectedCourses) {
-      coursesids.add(course.id.toString());
-    }
-    prefs.setStringList('coursesids', coursesids);
-    prefs.setBool('selectTask', Filters.selectTask);
-    prefs.setBool('selectQuiz', Filters.selectQuiz);
-    if (Filters.ganttStartDate != null) {
-      prefs.setString(
-          'ganttStartDate', Filters.ganttStartDate!.toIso8601String());
-    }
-    if (Filters.ganttEndDate != null) {
-      prefs.setString('ganttEndDate', Filters.ganttEndDate!.toIso8601String());
-    }
-    prefs.setBool('openingDate', Filters.openingDate);
-    prefs.setBool('closingDate', Filters.closingDate);
+    Map<String, dynamic> filterData = {
+      'coursesids': coursesids,
+      'selectTask': Filters.selectTask,
+      'selectQuiz': Filters.selectQuiz,
+      'ganttStartDate': Filters.ganttStartDate?.toIso8601String(),
+      'ganttEndDate': Filters.ganttEndDate?.toIso8601String(),
+      'openingDate': Filters.openingDate,
+      'closingDate': Filters.closingDate
+    };
+    prefs.setString(useremail, jsonEncode(filterData));
   }
 
-  Future<void> loadSavedFilters() async {
+  Future<void> loadSavedFilters(String useremail) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    List<String> coursesids = prefs.getStringList('coursesids') ?? [];
+    final String? userFilterData = prefs.getString(useremail);
+
+    if (userFilterData == null) return;
+
+    final filters = jsonDecode(userFilterData);
+
+    List<String> coursesids = List.from(filters['coursesids'] ?? []);
 
     Filters.selectedCourses = [];
 
     for (var courseid in coursesids) {
-      Filters.selectedCourses.add(user.userCourses!
-          .firstWhere((course) => course.id == int.parse(courseid)));
+      for (var userCourse in user.userCourses!) {
+        if (int.parse(courseid) == userCourse.id) {
+          Filters.selectedCourses.add(user.userCourses!
+              .where((course) => course.id == int.parse(courseid))
+              .first);
+        }
+      }
     }
 
-    Filters.selectTask = prefs.getBool('selectTask') ?? true;
-    Filters.selectQuiz = prefs.getBool('selectQuiz') ?? true;
+    Filters.selectTask = filters['selectTask'] ?? true;
+    Filters.selectQuiz = filters['selectQuiz'] ?? true;
 
-    if (prefs.getString('ganttStartDate') != null) {
-      Filters.ganttStartDate =
-          DateTime.parse(prefs.getString('ganttStartDate')!);
-    } else {
-      Filters.ganttStartDate = null;
-    }
+    Filters.ganttStartDate = filters['ganttStartDate'] != null
+      ? DateTime.parse(filters['ganttStartDate'])
+      : null;
 
-    if (prefs.getString('ganttEndDate') != null) {
-      Filters.ganttEndDate = DateTime.parse(prefs.getString('ganttEndDate')!);
-    } else {
-      Filters.ganttEndDate = null;
-    }
+    Filters.ganttEndDate = filters['ganttEndDate'] != null
+      ? DateTime.parse(filters['ganttEndDate'])
+      : null;
 
-    Filters.openingDate = prefs.getBool('openingDate') ?? true;
-    Filters.closingDate = prefs.getBool('closingDate') ?? true;
+    Filters.openingDate = filters['openingDate'] ?? true;
+    Filters.closingDate = filters['closingDate'] ?? true;
   }
 
   List<dynamic> getEvents(List<Courses> selectedCourses,
@@ -100,15 +104,13 @@ class HomeBackend {
       List<dynamic> events, dynamic event) {
     bool include = false;
     if (startDate != null && endDate != null) {
-      include = (eventDate.isAfter(startDate) ||
-              sameDay(startDate, eventDate)) &&
-          (eventDate.isBefore(endDate) || sameDay(endDate, eventDate));
+      include =
+          (eventDate.isAfter(startDate) || sameDay(startDate, eventDate)) &&
+              (eventDate.isBefore(endDate) || sameDay(endDate, eventDate));
     } else if (startDate != null && endDate == null) {
-      include =
-          eventDate.isAfter(startDate) || sameDay(startDate, eventDate);
+      include = eventDate.isAfter(startDate) || sameDay(startDate, eventDate);
     } else if (startDate == null && endDate != null) {
-      include =
-          eventDate.isBefore(endDate) || sameDay(endDate, eventDate);
+      include = eventDate.isBefore(endDate) || sameDay(endDate, eventDate);
     } else if (startDate == null && endDate == null) {
       include = true;
     }
