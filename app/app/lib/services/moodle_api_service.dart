@@ -20,6 +20,13 @@ class MoodleApiService {
   static Future<void> logout() async {
     _token = null;
     _username = null;
+    Filters.ganttStartDate = null;
+    Filters.ganttEndDate = null;
+    Filters.selectTask = true;
+    Filters.selectQuiz = true;
+    Filters.openingDate = true;
+    Filters.events = [];
+    Filters.selectedCourses = [];
   }
 
   static Future<void> login(String username, String password) async {
