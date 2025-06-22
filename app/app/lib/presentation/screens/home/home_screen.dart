@@ -29,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     homeBackend = HomeBackend(user: widget.user);
-    homeBackend.loadSavedFilters();
+    homeBackend.loadSavedFilters(widget.user.email!);
   }
 
   @override

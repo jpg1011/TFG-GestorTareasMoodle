@@ -36,7 +36,7 @@ class _CustomChipState extends State<CustomChip> {
             }
             Filters.events = homeBackend.getEvents(Filters.selectedCourses);
           });
-          homeBackend.saveFilters();
+          homeBackend.saveFilters(widget.user.email!);
         },
         child: Container(
           width: double.infinity,

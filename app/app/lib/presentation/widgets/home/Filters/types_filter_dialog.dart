@@ -55,7 +55,7 @@ class _TypesFilterDialogState extends State<TypesFilterDialog> {
                   Filters.events =
                       widget.homeBackend.getEvents(Filters.selectedCourses);
                 });
-                widget.homeBackend.saveFilters();
+                widget.homeBackend.saveFilters(widget.user.email!);
               },
               icon: Icon(
                 Icons.task,

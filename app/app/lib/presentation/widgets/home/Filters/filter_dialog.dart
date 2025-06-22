@@ -36,7 +36,7 @@ class _FilterDialogState extends State<FilterDialog> {
                 setState(() {
                   widget.homeBackend.clear();
                 });
-                widget.homeBackend.saveFilters();
+                widget.homeBackend.saveFilters(widget.user.email!);
               },
               child: const Text(
                 'Borrar',
@@ -127,7 +127,7 @@ class _FilterDialogState extends State<FilterDialog> {
                         Filters.selectedCourses,
                         startDate: Filters.ganttStartDate,
                         endDate: Filters.ganttEndDate);
-                    widget.homeBackend.saveFilters();
+                    widget.homeBackend.saveFilters(widget.user.email!);
                   });
                 },
                 child: Container(
@@ -170,7 +170,7 @@ class _FilterDialogState extends State<FilterDialog> {
                         Filters.selectedCourses,
                         startDate: Filters.ganttStartDate,
                         endDate: Filters.ganttEndDate);
-                    widget.homeBackend.saveFilters();
+                    widget.homeBackend.saveFilters(widget.user.email!);
                   });
                 },
                 child: Container(
@@ -204,7 +204,7 @@ class _FilterDialogState extends State<FilterDialog> {
                           widget.homeBackend.getEvents(Filters.selectedCourses);
                     }
                   });
-                  widget.homeBackend.saveFilters();
+                  widget.homeBackend.saveFilters(widget.user.email!);
                 }),
             const Expanded(child: Text('Fecha apertura')),
             Checkbox(
@@ -219,7 +219,7 @@ class _FilterDialogState extends State<FilterDialog> {
                           widget.homeBackend.getEvents(Filters.selectedCourses);
                     }
                   });
-                  widget.homeBackend.saveFilters();
+                  widget.homeBackend.saveFilters(widget.user.email!);
                 }),
             const Expanded(child: Text('Fecha cierre'))
           ],
