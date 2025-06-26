@@ -51,8 +51,15 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
     for (var task in personalTasks) {
       DateTime date = DateTime.parse(task['date']);
       if (Filters.selectedCourses.isNotEmpty) {
-        if (Filters.selectedCourses.contains(widget.user.userCourses!
-            .firstWhere((course) => course.shortname == task['course']))) {
+        Courses? course;
+        try{
+          course = widget.user.userCourses!
+            .firstWhere((course) => course.shortname == task['course']);
+        }catch(e){
+          course = null;
+        }
+
+        if (course != null && Filters.selectedCourses.contains(course)) {
           if (Filters.ganttStartDate != null && Filters.ganttEndDate != null) {
             include = (Filters.ganttStartDate!.isBefore(date) ||
                     sameDay(Filters.ganttStartDate!, date)) &&
@@ -112,7 +119,9 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
   }
 
   bool sameDay(DateTime date1, DateTime date2) {
-    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day; 
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   @override
