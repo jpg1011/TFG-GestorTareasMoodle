@@ -11,6 +11,8 @@ PlanifyNow es una aplicación multiplataforma que permite a usuarios de Moodle, 
 
 ## **Indice**
 - [Instalación](#instalación)
+- [Ejecución](#ejecución)
+  - [Ejecución en otros sistemas](#ejecución-en-otros-sistemas)
 - [Tecnologías](#tecnologías)
 - [Funcionalidades](#funcionalidades)
 - [Roadmap](#roadmap)
