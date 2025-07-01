@@ -71,6 +71,8 @@ En ese caso, se debe de ejecutar el siguiente comando:
 ## **⏳Roadmap**
 - 🌍Internacionalización
 - 🔔Sistema de notificaciones
+- 📰Resumen diario
+- 📈Visualización de estadísticas
 - 📊Nuevos diagramas
 - ⚙️Nuevos filtros
 - 🌐Integración con otros LMS
