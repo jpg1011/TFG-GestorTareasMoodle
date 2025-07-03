@@ -1,9 +1,7 @@
-import 'dart:collection';
-
-import 'package:app/models/courses.dart';
 import 'package:app/models/databases/personaltask_database.dart';
 import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
+import 'package:app/presentation/screens/personal_tasks/personal_tasks_screen.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
@@ -23,14 +21,14 @@ class CreateTaskPage extends StatefulWidget {
 typedef MenuEntry = DropdownMenuEntry<String>;
 
 class _CreateTaskPageState extends State<CreateTaskPage> {
-  TextEditingController _taskname = TextEditingController();
-  TextEditingController _taskdescription = TextEditingController();
+  final TextEditingController _taskname = TextEditingController();
+  final TextEditingController _taskdescription = TextEditingController();
   String? taskCourse;
   List<DateTime?>? date;
   TimeOfDay? time;
   TaskPriority? taskPriority;
-  FocusNode _focusNodeName = FocusNode();
-  FocusNode _focusNodeDesc = FocusNode();
+  final FocusNode _focusNodeName = FocusNode();
+  final FocusNode _focusNodeDesc = FocusNode();
   late final PersonalTaskDatabase personalTasksDB;
 
   @override
@@ -64,6 +62,15 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => PersonalTasksScreen(user: widget.user))), 
+                      icon: const Icon(Icons.arrow_back, color: Colors.black)
+                    )
+                  ],
+                ),
                     const Text('Nueva tarea',
                         style: TextStyle(
                             fontSize: 46, fontWeight: FontWeight.bold)),
@@ -434,6 +441,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.3,
+          maxChildSize: 0.4,
           builder: (context, scrollController) {
             return Container(
               width: double.infinity,
@@ -463,7 +471,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   const SizedBox(height: 16.0),
                   priorityTile(color: Colors.green, priorityName: 'Baja'),
                   priorityTile(color: Colors.orange, priorityName: 'Media'),
-                  priorityTile(color: Colors.red, priorityName: 'Alta')
+                  priorityTile(color: Colors.red, priorityName: 'Alta'),
+                  const SizedBox(height: 8.0),
                 ],
               ),
             );

@@ -3,6 +3,7 @@ import 'package:app/models/courses.dart';
 import 'package:app/models/databases/personaltask_database.dart';
 import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
+import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/presentation/widgets/personal_tasks/create_task_page.dart';
 import 'package:app/presentation/widgets/personal_tasks/task_card.dart';
 import 'package:app/services/moodle_api_service.dart';
@@ -144,6 +145,15 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
         body: SafeArea(
           child: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen(user: widget.user))), 
+                    icon: const Icon(Icons.arrow_back, color: Colors.black)
+                  )
+                ],
+              ),
               TabBar(
                   splashBorderRadius: BorderRadius.circular(50),
                   indicatorPadding:
