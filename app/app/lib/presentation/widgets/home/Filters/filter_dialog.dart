@@ -3,6 +3,7 @@ import 'package:app/models/user_model.dart';
 import 'package:app/presentation/widgets/home/filters/courses_filter_dialog.dart';
 import 'package:app/presentation/widgets/home/filters/types_filter_dialog.dart';
 import 'package:app/utils/constants.dart';
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -106,23 +107,10 @@ class _FilterDialogState extends State<FilterDialog> {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  DateTime? startDate = await showDatePicker(
-                      context: context,
-                      builder: (context, child) {
-                        return Theme(
-                            data: ThemeData(useMaterial3: false),
-                            child: child ?? const SizedBox());
-                      },
-                      firstDate:
-                          DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: Filters.ganttEndDate ??
-                          DateTime.now().add(const Duration(days: 365)),
-                      locale: const Locale('es', 'ES'),
-                      helpText: 'Fecha inicial',
-                      confirmText: 'Aceptar',
-                      cancelText: 'Cancelar');
+                  List<DateTime?>? startDate =
+                                    await showCalendarPicker();
                   setState(() {
-                    Filters.ganttStartDate = startDate;
+                    Filters.ganttStartDate = startDate?[0];
                     Filters.events = widget.homeBackend.getEvents(
                         Filters.selectedCourses,
                         startDate: Filters.ganttStartDate,
@@ -149,23 +137,10 @@ class _FilterDialogState extends State<FilterDialog> {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  DateTime? endDate = await showDatePicker(
-                    context: context,
-                    builder: (context, child) {
-                      return Theme(
-                          data: ThemeData(useMaterial3: false),
-                          child: child ?? const SizedBox());
-                    },
-                    firstDate: Filters.ganttStartDate ??
-                        DateTime.now().subtract(const Duration(days: 365)),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                    locale: const Locale('es', 'ES'),
-                    helpText: 'Fecha final',
-                    confirmText: 'Aceptar',
-                    cancelText: 'Cancelar',
-                  );
+                  List<DateTime?>? endDate =
+                                    await showCalendarPicker();
                   setState(() {
-                    Filters.ganttEndDate = endDate;
+                    Filters.ganttEndDate = endDate?[0];
                     Filters.events = widget.homeBackend.getEvents(
                         Filters.selectedCourses,
                         startDate: Filters.ganttStartDate,
@@ -227,4 +202,25 @@ class _FilterDialogState extends State<FilterDialog> {
       ]),
     );
   }
+
+  Future<List<DateTime?>?> showCalendarPicker() async {
+    final config = CalendarDatePicker2WithActionButtonsConfig(
+        calendarViewScrollPhysics: const NeverScrollableScrollPhysics(),
+        calendarType: CalendarDatePicker2Type.single,
+        selectedDayHighlightColor: const Color(0xFF38373C),
+        closeDialogOnCancelTapped: true,
+        firstDayOfWeek: 1,
+        centerAlignModePicker: true,
+        selectedDayTextStyle: const TextStyle(color: Colors.white));
+
+    List<DateTime?>? date = await showCalendarDatePicker2Dialog(
+        context: context,
+        config: config,
+        dialogSize: const Size(325, 400),
+        borderRadius: BorderRadius.circular(20),
+        value: []);
+
+    return date;
+  }
+
 }
