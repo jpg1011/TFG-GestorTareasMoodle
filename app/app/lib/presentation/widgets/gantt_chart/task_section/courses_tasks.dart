@@ -30,7 +30,7 @@ class _CoursesTasksState extends State<CoursesTasks> {
           GridView.count(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            crossAxisCount: 1,
+            crossAxisCount: MediaQuery.of(context).size.width < 600 ? 1 : 2 ,
             childAspectRatio: 2,
             
             children: List.generate(widget.courseevents.length, (index) {
