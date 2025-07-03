@@ -1,15 +1,13 @@
-import 'dart:collection';
+import 'package:app/backend/personal_tasks/personal_tasks_backend.dart';
 import 'package:app/models/courses.dart';
 import 'package:app/models/databases/personaltask_database.dart';
 import 'package:app/models/personaltask.dart';
 import 'package:app/models/user_model.dart';
-import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/presentation/widgets/personal_tasks/create_task_page.dart';
 import 'package:app/presentation/widgets/personal_tasks/task_card.dart';
 import 'package:app/services/moodle_api_service.dart';
 import 'package:app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 
 class PersonalTasksScreen extends StatefulWidget {
@@ -52,10 +50,10 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
       DateTime date = DateTime.parse(task['date']);
       if (Filters.selectedCourses.isNotEmpty) {
         Courses? course;
-        try{
+        try {
           course = widget.user.userCourses!
-            .firstWhere((course) => course.shortname == task['course']);
-        }catch(e){
+              .firstWhere((course) => course.shortname == task['course']);
+        } catch (e) {
           course = null;
         }
 
@@ -160,13 +158,13 @@ class _PersonalTasksScreenState extends State<PersonalTasksScreen> {
                 child: TabBarView(children: [
                   SecondaryTabBar(
                       tasks: undoneTasks,
-                      tabs: ['Hoy', 'Mañana', 'Esta semana', 'Todos'],
+                      tabs: const ['Hoy', 'Mañana', 'Esta semana', 'Todos'],
                       done: false,
                       personalTaskDatabase: personalTasksDB!,
                       refreshTasks: loadTasks),
                   SecondaryTabBar(
                     tasks: doneTasks,
-                    tabs: ['Hoy', 'Últimos 7d', 'Este mes', 'Todos'],
+                    tabs: const ['Hoy', 'Últimos 7d', 'Este mes', 'Todos'],
                     done: true,
                     personalTaskDatabase: personalTasksDB!,
                     refreshTasks: loadTasks,
@@ -219,6 +217,7 @@ class SecondaryTabBar extends StatefulWidget {
 class _SecondaryTabBarState extends State<SecondaryTabBar>
     with TickerProviderStateMixin {
   late final TabController _tabController;
+  final PersonalTasksBackend _personalTasksBackend = PersonalTasksBackend();
 
   @override
   void initState() {
@@ -254,8 +253,8 @@ class _SecondaryTabBarState extends State<SecondaryTabBar>
                 controller: _tabController,
                 children: widget.tabs.map((tab) {
                   final filtered = widget.done
-                      ? filterDoneTask(tasks: widget.tasks, tab: tab)
-                      : filterUnDoneTask(tasks: widget.tasks, tab: tab);
+                      ? _personalTasksBackend.filterDoneTask(tasks: widget.tasks, tab: tab)
+                      : _personalTasksBackend.filterUnDoneTask(tasks: widget.tasks, tab: tab);
 
                   filtered.sort((a, b) => widget.done
                       ? a.finishedat!.compareTo(b.finishedat!)
@@ -336,68 +335,5 @@ class TabBarListView extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-List<PersonalTask> filterDoneTask(
-    {required List<PersonalTask> tasks, required String tab}) {
-  final now = DateTime.now();
-
-  switch (tab) {
-    case 'Hoy':
-      return tasks.where((task) {
-        return task.finishedat!.year == now.year &&
-            task.finishedat!.month == now.month &&
-            task.finishedat!.day == now.day;
-      }).toList();
-    case 'Últimos 7d':
-      final week = now.subtract(const Duration(days: 7));
-      return tasks
-          .where((task) =>
-              task.finishedat!.isBefore(now) && task.finishedat!.isAfter(week))
-          .toList();
-    case 'Este mes':
-      return tasks
-          .where((task) =>
-              task.finishedat!.year == now.year &&
-              task.finishedat!.month == now.month)
-          .toList();
-    case 'Todos':
-      return tasks;
-    default:
-      return tasks;
-  }
-}
-
-List<PersonalTask> filterUnDoneTask(
-    {required List<PersonalTask> tasks, required String tab}) {
-  final now = DateTime.now();
-  switch (tab) {
-    case 'Hoy':
-      return tasks
-          .where((task) =>
-              task.date.year == now.year &&
-              task.date.month == now.month &&
-              task.date.day == now.day)
-          .toList();
-    case 'Mañana':
-      final tomorrow = now.add(const Duration(days: 1));
-      return tasks
-          .where((task) =>
-              task.date.year == tomorrow.year &&
-              task.date.month == tomorrow.month &&
-              task.date.day == tomorrow.day)
-          .toList();
-    case 'Esta semana':
-      final weekStart = now.subtract(Duration(days: now.weekday - 1));
-      final weekEnd = weekStart.add(const Duration(days: 6));
-      return tasks
-          .where((task) =>
-              task.date.isAfter(weekStart) && task.date.isBefore(weekEnd))
-          .toList();
-    case 'Todos':
-      return tasks;
-    default:
-      return tasks;
   }
 }
