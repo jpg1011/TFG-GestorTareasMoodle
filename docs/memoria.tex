@@ -8,6 +8,7 @@
 \usepackage{lmodern} % Scalable font
 \usepackage{microtype}
 \usepackage{placeins}
+\usepackage{floatrow}
 
 \RequirePackage{booktabs}
 \RequirePackage[table]{xcolor}
@@ -352,12 +353,13 @@
   }
 \makeatother
 
-\newcommand{\nombre}{Nombre del alumno} %%% cambio de comando
+\newcommand{\nombre}{Javier Pampliega García} %%% cambio de comando
 
 % Datos de portada
-\title{título del TFG}
+\title{PlanLMS \\ 
+        Aplicación multiplataforma para la gestión de tareas de la plataforma Moodle}
 \author{\nombre}
-\tutor{nombre tutor}
+\tutor{Raúl Marticorena Sánchez}
 \date{\today}
 
 \begin{document}
@@ -374,11 +376,11 @@
 
 \noindent\includegraphics[width=\textwidth]{cabecera}\vspace{1cm}
 
-\noindent D. nombre tutor, profesor del departamento de nombre departamento, área de nombre área.
+\noindent D. Raúl Marticorena Sánchez, profesor del departamento de Ingeniería Informática, área de Lenguajes y Sistemas Informáticos.
 
 \noindent Expone:
 
-\noindent Que el alumno D. \nombre, con DNI dni, ha realizado el Trabajo final de Grado en Ingeniería Informática titulado título de TFG. 
+\noindent Que el alumno D. \nombre, con DNI 71755086P, ha realizado el Trabajo final de Grado en Ingeniería Informática titulado PlanLMS Aplicación multiplataforma para la gestión de tareas de la plataforma Moodle. 
 
 \noindent Y que dicho trabajo ha sido realizado por el alumno bajo la dirección del que suscribe, en virtud de lo cual se autoriza su presentación y defensa.
 
@@ -389,27 +391,29 @@ En Burgos, {\large \today}
 \vfill\vfill\vfill
 
 % Author and supervisor
-\begin{minipage}{0.45\textwidth}
-\begin{flushleft} %\large
-Vº. Bº. del Tutor:\\[2cm]
-D. nombre tutor
-\end{flushleft}
-\end{minipage}
-\hfill
-\begin{minipage}{0.45\textwidth}
-\begin{flushleft} %\large
-Vº. Bº. del co-tutor:\\[2cm]
-D. nombre co-tutor
-\end{flushleft}
-\end{minipage}
-\hfill
+%\begin{minipage}{0.45\textwidth}
+%\begin{flushleft} %\large
+%Vº. Bº. del Tutor:\\[2cm]
+%D. nombre tutor
+%\end{flushleft}
+%\end{minipage}
+%\hfill
+%\begin{minipage}{0.45\textwidth}
+%\begin{flushleft} %\large
+%Vº. Bº. del co-tutor:\\[2cm]
+%D. nombre co-tutor
+%\end{flushleft}
+%\end{minipage}
+%\hfill
 
-\vfill
+%\vfill
 
 % para casos con solo un tutor comentar lo anterior
 % y descomentar lo siguiente
-%Vº. Bº. del Tutor:\\[2cm]
-%D. nombre tutor
+\begin{center}
+Vº. Bº. del Tutor:\\[2cm]
+D. Raúl Marticorena Sánchez
+\end{center}
 
 
 \newpage\null\thispagestyle{empty}\newpage
@@ -422,12 +426,18 @@ D. nombre co-tutor
 % Abstract en castellano
 \renewcommand*\abstractname{Resumen}
 \begin{abstract}
-En este primer apartado se hace una \textbf{breve} presentación del tema que se aborda en el proyecto.
+PlanLMS es una aplicación multiplataforma desarrollada con Flutter con el objetivo de facilitar la planificación de tareas a los usuarios de plataformas Moodle. Su funcionamiento es posible por la utilización de los servicios web de Moodle. 
+
+A través de una interfaz simple e intuitiva, se busca que el usuario logre planificar sus actividades por medio de un diagrama de Gantt que le permita visualizar la distribución de estas actividades en el tiempo. Por otra parte, incorpora una sección donde el usuario puede visualizar todas sus actividades de forma ordenada. Además, se incorpora otra funcionalidad que permite al usuario crear sus propias tareas asociadas a un curso.
+
+Todas estas funcionalidades pueden ser reguladas mediante el sistema de filtrado que permite que el usuario visualice únicamente el contenido que necesite.
+
+
 \end{abstract}
 
 \renewcommand*\abstractname{Descriptores}
 \begin{abstract}
-Palabras separadas por comas que identifiquen el contenido del proyecto Ej: servidor web, buscador de vuelos, android \ldots
+Gestión de tareas, Moodle, diagrama de Gantt, multiplataforma, Flutter, Dart.
 \end{abstract}
 
 \clearpage
@@ -435,12 +445,16 @@ Palabras separadas por comas que identifiquen el contenido del proyecto Ej: serv
 % Abstract en inglés
 \renewcommand*\abstractname{Abstract}
 \begin{abstract}
-A \textbf{brief} presentation of the topic addressed in the project.
+PlanLMS is a cross-platform application developed with Flutter, designed to make task planning easier for Moodle users. It operates by using Moodle´s web services.
+
+Through a simple and intuitive interface, it allows the user to plan activities via a Gantt chart that visualizes their distribution over time. Likewise, it includes a section where the user can view all their activities in an organized list. Additionally, it offers a feature that lets the user create their own tasks linked to a course.
+
+All of these functions can be managed through a filtering system that enables users to view only the content they need.
 \end{abstract}
 
 \renewcommand*\abstractname{Keywords}
 \begin{abstract}
-keywords separated by commas.
+Task management, Moodle, Gantt chart, cross-platform, Flutter, Dart.
 \end{abstract}
 
 \clearpage

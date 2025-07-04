@@ -1,13 +1,333 @@
 \apendice{Plan de Proyecto Software}
 
 \section{Introducción}
+Este apéndice se centra en explicar la planificación que se ha llevado a cabo para desarrollar el proyecto. Se explorará la planificación temporal, estudio de viabilidad, viabilidad económica y legal. El objetivo es que el proyecto finalice en el plazo establecido, con los recursos necesarios y cumpliendo la normativa.
 
 \section{Planificación temporal}
+La planificación temporal del proyecto fue divida por \textit{sprints} de una duración de una o dos semanas. En estos \textit{sprints} se definían objetivos a completar durante el transcurso de las semanas y se entregaban los resultados en la finalización del \textit{sprint}, donde se realizaba una retroalimentación y se definían los objetivos del siguiente \textit{sprint}.
+
+\subsection{Sprint 1 (05/02/2025 - 19/02/2025)}
+En el primer \textit{sprint} se realizó la configuración inicial del proyecto así como se creó el repositorio del proyecto en GitHub. Una vez realizados estos dos pasos, se procedió con la implementación del prototipo trabajado los anteriores meses. En este, se incluía el inicio de sesión de la aplicación, una pantalla principal con un botón y la pantalla del diagrama de Gantt. Además de, la implementación de servicios para obtener datos de la API de Moodle.
+
+A parte de los objetivos anteriores, se propuso la implementación de un filtro para el diagrama de Gantt. En esta primera versión del sistema de filtrado se permitía al usuario filtrar por cursos y por tipo de actividad.
+
+\subsection{Sprint 2 (19/02/2025 - 06/03/2025)}
+En el segundo \textit{sprint}, el objetivo era aplicar mejoras sobre la interfaz del sistema de filtrado del diagrama de Gantt. Además, se implementó la posibilidad de que el usuario se pudiese conectar a cualquier servidor Moodle. A su vez, se realizó un cambio de librería de diagrama de Gantt, con el fin de mejorar el aspecto visual así como la representación de actividades.
+
+En este \textit{sprint} se incluyó una librería que iba a ser muy importante en el futuro, \textit{SharedPreferences}. El objetivo en ese momento era almacenar la URL del servidor Moodle al que el usuario quería conectarse.
+
+\subsection{Sprint 3 (06/03/2025 - 19/03/2025)}
+En este \textit{sprint} el principal objetivo era arreglar un error de visualización en el diagrama de Gantt. Este error consistía en que el diagrama solo podía mostrar un número limitado de actividades, ya que la altura de este limitaba poder mostrar todas. En la reunión se plantearon dos opciones:
+\begin{itemize}
+    \item Modificar la librería o implementar alguna función que calcule la altura.
+    \item Utilizar un \textit{WebView} para tener acceso a un diagrama de Gantt desarrollado en JavaScript.
+\end{itemize}
+Finalmente, se optó por crear una función que calculara la altura del diagrama en función del número de actividades que se iban a visualizar.
+
+Por otra parte, se añadieron las siguientes mejoras respecto al diagrama:
+\begin{itemize}
+    \item Asignación de colores a los cursos.
+    \item Funciones para asignación de fechas, ordenación de tareas y cuestionarios.
+    \item Admisión de actividades vacías, corrección de fechas, cambio de estilos, etc.
+\end{itemize}
+
+Por último, se añadió un botón que permitía la visualización de la contraseña en el campo de texto de la pantalla de inicio de sesión.
+
+\subsection{Sprint 4 (19/03/2025 - 02/04/2025)}
+En el cuarto \textit{sprint} la atención se centró en la resolución de unos \textit{bugs} relacionados con el diagrama y su sección de actividades. Los \textit{bugs} a solucionar eran:
+\begin{itemize}
+    \item Mal adjudicada una función que asignaba la fecha errónea.
+    \item Reajuste de los valores a retornar en la función que obtenía las fechas de cierre.
+\end{itemize}
+Estos problemas afectaban sobre la visualización de las actividades en el diagrama de Gantt. El otro \textit{bug} a corregir afectaba sobre el filtrado de actividades, que aun teniendo desmarcada la opción del tipo de actividad, se seguían mostrando por pantalla.
+
+Una vez resueltos los \textit{bugs}, se procedió a implementar una línea vertical que indicara la fecha actual, nuevas entidades para la sección de actividades y nuevos datos (tiempo restante y calificación) en las tarjetas de las actividades.
+
+Por último, se esperaba implementar una nueva funcionalidad que permitiera a los usuarios establecer sus propias tareas personales y que estas se almacenaran en una base de datos en la nube.
+
+\subsection{Sprint 5 (02/04/2025 - 16/04/2025)}
+En este \textit{sprint}, el primer objetivo era solucionar el error que provocaba Firebase. Este error no permitía la correcta depuración de la aplicación, debido a la ausencia de unos archivos de depuración. Se trato de solucionar este error recurriendo a las experiencias de otros usuarios, pero el resultado fue el mismo, no funcionaba. Por lo tanto, se optó por la segunda opción planteada, cambiar a la librería de Supabase (alternativa de Firebase). Una vez solucionado este error, se procedió con la implementación de la ventana de tareas personales, además de, un ventana con un formulario para la creación de las tareas personales del usuario.
+
+Por otra parte, se añadió un nuevo filtro que permitía filtrar las actividades en función del rango de fechas en el que se situaban. En relación a los filtros, se añadió la persistencia de los mismos, de forma que estos se almacenaban de forma local en el dispositivo del usuario.
+
+Todos estos cambios e implementaciones fueron acompañados con la corrección de \textit{bugs} del \textit{sprint} anterior, y de los nuevos \textit{bugs} que iban apareciendo conforme se implementaban nuevas funciones.
+
+\subsection{Sprint 6 (16/04/2025 - 30/04/2025)}
+El objetivo principal de este \textit{sprint} era la mejora de la interfaz de la pantalla de tareas personales. Entre las mejoras a implementar se destacaba:
+\begin{itemize}
+    \item Tarjetas para la representación de tareas.
+    \item Distribución de tareas por columnas.
+    \item Botón para cambiar el tipo de ordenación: temporal o por curso.
+\end{itemize}
+
+En este punto de la aplicación, al disponer de dos funcionalidades que requerían de un filtro, se llegó a la conclusión de que la mejor opción era mover el filtro del diagrama a la pantalla de inicio para convertirlo en un filtro general que actuara sobre toda la aplicación.
+
+A parte de mover el filtro a la pantalla principal, se añadió otro filtro que permitía a los usuarios filtrar las actividades en función de las fechas disponibles, es decir, si las actividades estaban configuradas con fecha de inicio y cierre.
+
+\subsection{Sprint 7 (30/04/2025 - 14/05/2025)}
+Para este \textit{sprint} los objetivos principales eran implementar dos funcionalidades básicas:
+\begin{itemize}
+    \item Cierre de sesión.
+    \item Calificaciones de cuestionarios.
+\end{itemize}
+
+Hasta la fecha, la aplicación no respondía ante fallos imprevistos, por lo tanto, simplemente se bloqueaba y no permitía al usuario avanzar. Es por ello, que en este punto, se planteo la incorporación de robustez en distintas funcionalidades para evitar este problema. Se aplicó robustez en:
+\begin{itemize}
+    \item \textbf{Inicio de sesión:} comprobación de credenciales de acceso.
+    \item \textbf{Conexión a Moodle:} verificación de que la URL sea un servidor Moodle.
+\end{itemize}
+
+Por otro lado, se decidió reorientar la aplicación hacia dispositivos móviles, dejando más de lado el diseño para ordenadores. En primeras instancias se rediseñó:
+\begin{itemize}
+    \item Inicio de sesión.
+    \item Pantalla principal.
+    \item Pantalla del diagrama de Gantt.
+\end{itemize}
+
+A su vez, se fue refactorizando el código para ordenarlo en distintos directorios, para facilitar su mantenimiento en el futuro así como su escalabilidad.
+
+Por último, se implementó la obtención y visualización de calificaciones de cuestionarios en la sección de actividades del diagrama de Gantt. Además, se implementó el cierre de sesión desde la pantalla principal.
+
+\subsection{Sprint 8 (14/05/2025 - 28/05/2025)}
+En el octavo \textit{sprint}, se implementaron mejoras sobre la pantalla del diagrama de Gantt. Estas mejoras son:
+\begin{itemize}
+    \item Panel deslizable con configuraciones del diagrama.
+    \item Diagrama interactivo con posibilidad de hacer \textit{zoom} y moverlo en todas direcciones.
+    \item Cambio en la posición de las líneas temporales.
+\end{itemize}
+
+A nivel general, se fueron moviendo de directorios los distintos componentes de la aplicación con el fin de facilitar su mantenimiento y escalabilidad.
+
+En cuanto a la pantalla de tareas personales, se implementó un formulario que permitía la creación de tareas personales a la vez que se fueron eliminando los anteriores componentes, ya que el diseño original fue completamente modificado. Las características del nuevo diseño eran:
+\begin{itemize}
+    \item Visualización de las tareas en formato lista.
+    \item Distintos tipos de pestañas en función del estado de finalización y el tiempo.
+    \item Ordenación de tareas en pestañas de temporalidades.
+    \item Tarjetas deslizables con opción de borrado y, también presionables para ver toda la información de la tarea.
+    \item Implementación de niveles de prioridad.
+\end{itemize}
+
+La implementación de un formulario, obligó a reforzar la robustez de la aplicación. Por ello, se aplicó la obligación de rellenar algunos campos del formulario, en el caso de que no fueran rellenados no permitiría al usuario la creación de la tarea. Posteriormente se añadió el filtrado a la pantalla de tareas personales y se corrigieron \textit{bugs}. 
+
+Finalmente, en este \textit{sprint} se lanzó la primera \textit{pre-release} de la aplicación con las siguientes funcionalidades:
+\begin{itemize}
+    \item Filtro general para toda la aplicación.
+    \item Diagrama de Gantt para actividades de Moodle.
+    \item Pantalla de actividades del diagrama de Gantt.
+    \item Creación y gestión de tareas personales.
+\end{itemize}
+
+\subsection{Sprint 9 (28/05/2025 - 04/06/2025)}
+En este \textit{sprint}, el objetivo principal era dar solución a los \textit{bugs} de la versión 0.1, estos \textit{bugs} eran:
+\begin{itemize}
+    \item Error en la asignación de colores a los cursos del diagrama.
+    \item Error en el filtrado por rango de fechas del diagrama.
+    \item Error en el filtrado de fechas, ya que no se seleccionaban las tareas que se encontraban en el limite.
+\end{itemize}
+
+A parte de la corrección de \textit{bugs}, se realizaron procesos de refactorización del \textit{backend} de la pantalla principal. Además, se llevaron a cabo ciertas modificaciones que mejoraron el aspecto visual de la aplicación.
+
+En este punto, se empezó a dar más atención a la redacción de las memorias y aspectos de documentación.
+
+\subsection{Sprint 10 (04/06/2025 - 12/06/2025)}
+A lo largo de esta semana me centré en la redacción de las memorias, se redactaron los apartados más importantes, entre los que se encontraban:
+\begin{itemize}
+    \item Conceptos teóricos.
+    \item Aspectos relevantes.
+    \item Trabajos relacionados.
+    \item Conclusiones y Líneas de trabajo futuras.
+\end{itemize}
+
+Por otra parte se empezó a refactorizar el \textit{backend} del inicio de sesión para moverlo a un fichero a parte.
+
+\subsection{Sprint 11 (12/06/2025 - 23/06/2025)}
+En este \textit{sprint} se terminó de refactorizar el \textit{backend} del inicio de sesión.
+
+Por otra parte, se continuó la redacción de las memorias y a su vez se comenzó la redacción de los anexos.
+
+Por último, se corrigió un \textit{bug} que no permitía guardar los filtros de múltiples usuarios, y por lo tanto, la aplicación colapsaba. Además, se corrigieron otros \textit{bugs} que se encontraron.
+
+\subsection{Sprint 12 (23/06/2025 - 02/07/2025)}
+Para este \textit{sprint}, lo único que quedaba era finalizar los anexos y revisar toda la documentación. Además, se reviso el código en búsqueda de mejoras o errores. Por otra parte, se realizaron cambios en el repositorio del proyecto para mejorar la información (\textit{README} Y licencia) que se proporciona en el mismo.
+
+\subsection{Sprint 13 (02/07/2025  08/07/2025)}
+En este último \textit{sprint}, se finalizó toda la documentación y se llevó a cabo una revisión general del proyecto con el objetivo de corregir errores. También, se realizaron las últimas modificaciones de código y se lanzó la \textit{release v1.0}
 
 \section{Estudio de viabilidad}
+En este apartado se van a estudiar dos aspectos de viabilidad:
+\begin{itemize}
+    \item \textbf{Económica:} aspectos económicos que permiten saber si el proyecto es viable económicamente.
+    \item \textbf{Legal:} aspectos legales que permiten saber si el proyecto cumple con todas las leyes.
+\end{itemize}
+
+Si el estudio de viabilidad muestra un resultado positivo, el proyecto puede ser desarrollado sin el temor a no cumplir con los mínimos requeridos.
 
 \subsection{Viabilidad económica}
+En este apartado se hará un estudio de viabilidad económica, es decir, se estudiará en profundidad tanto de los costes como de los beneficios. Con el fin de abordar la rentabilidad del proyecto.
+
+El primer paso es estudiar los costes que se pueden generar en torno al desarrollo del proyecto. El objetivo es tener una idea general del coste total del proyecto para posteriormente compararlo con lo beneficios y concluir la rentabilidad del desarrollo. Para ello, se van a dividir los costes por grupos con el fin de distinguirlos de forma clara.
+
+\subsubsection{Empleados}
+El primer coste a estudiar, es el coste humano, ya que sin un desarrollador este proyecto no se puede llevar a cabo. En este caso, el desarrollador ha sido el alumno, es decir yo. Por otra parte hay que tener en cuenta al tutor, por la realización de tutorías para guiar al alumno en todas las partes del proyecto. Teniendo localizados a los empleados, se va a dividir y calcular los costes de cada uno.
+
+Empezando por el desarrollador, hay que tener en cuenta el sueldo medio de un programador junior en España, en este caso el sueldo se sitúa entre los 18.000€ y 24.000€, se toma la media entre ambos y sale 21.000€. Otro factor a tener en cuenta son las horas de trabajo llevadas a cabo por el alumno, que son unas 400 horas. En total se han trabajado 5 meses en el proyecto, por lo tanto, 80 horas mensuales.
+\begin{equation}
+    21.000\ \frac{\text{\euro}}{\text{año}}*\frac{1\ \text{año}}{12\ \text{meses}}*\frac{1\ \text{mes}}{160\ \text{horas de trabajo}} = 10.94\ \frac{\text{\euro}}{\text{hora}}
+\end{equation}
+
+Teniendo calculado el sueldo por hora de una jornada laboral completa, basta con multiplicarlo por las horas de trabajo empleadas.
+\begin{equation}
+    10.94\ \frac{\text{\euro}}{\text{hora}}*400\ \text{horas} = 4376\ \text{\euro}
+\end{equation}
+
+En cuanto al sueldo de tutor, se toma como referencia un sueldo medio de 40€/hora y una duración media de una hora por reunión. Por lo tanto, se calcula el gasto de tutor:
+\begin{equation}
+    40\ \frac{\text{\euro}}{\text{reunión}}*11\ \text{reuniones} = 440\ \text{\euro}
+\end{equation}
+
+Ahora hay que tener en cuenta que como empresa hay que dar de alta a los empleados en la Seguridad Social \cite{seguridad_social}, otro factor a tener en cuenta como coste. Por lo tanto, al empresa tendría que pagar un salario bruto teniendo en cuenta el Régimen General de la Seguridad Social:
+
+\tablaSmallSinColores
+{Porcentajes de cotización para empresas}
+{lc}
+{cotizacion-empresas}
+{
+\textbf{Concepto} & \textbf{Empresa} \\
+}
+{
+         Contingencias & 23.60\% \\
+         Desempleo & 5.50\% \\
+         FOGASA & 0.20\% \\
+         Formación profesional & 0.60\% \\
+}
+
+\begin{equation}
+    4376\ \text{\euro} + 440\ \text{\euro} = 4816\ \text{\euro}
+\end{equation}
+
+\begin{equation}
+    4816\ \text{\euro} * (1 + (0.236 + 0.055 + 0.002 + 0.006)) = 6255.98\ \text{\euro}
+\end{equation}
+
+Por lo tanto, el coste humano total del proyecto es de 6255.98€.
+
+\subsubsection{Software}
+En cuanto al coste software, el desarrollo del proyecto se ha llevado a cabo con la utilización de herramientas gratuitas y de código abierto. Esto ha permitido reducir significativamente los costes del proyecto. Los costes software han sido:
+
+\tablaSmallSinColores
+{Costes software}
+{lcc}
+{costes-software}
+{
+    \textbf{Software} & \textbf{Licencia} & \textbf{Coste}\\
+}
+{
+    Visual Studio Code & Gratuita & 0€ \\
+    Postman & Plan gratuito& 0€ \\
+    Android Emulator & Gratuita & 0€ \\
+    Overleaf & Plan gratuito & 0€ \\
+    Dart & Open Source & 0€ \\
+    Flutter SDK & Open Source & 0€ \\
+    Supabase & Plan gratuito & 0€ \\
+    Librerías & Open Source & 0€ \\
+    \midrule
+    Total & & 0€ \\
+}
+
+En el caso de requerir de más espacio en la nube, se podría considerar la suscripción a los distintos planes que ofrece la plataforma.
+
+El coste total de los productos software ha sido de un total de 0€.
+
+\subsubsection{Hardware}
+En cuanto al coste del \textit{hardware}, hay que distinguir entre los distintos elementos \textit{hardware}:
+
+\tablaSmallSinColores
+{Costes hardware}
+{lcc}
+{costes-hardware}
+{
+    \textbf{Hardware} & \textbf{Coste} & \textbf{Coste amortizado}\\
+}
+{
+    Ordenador portátil & 1800€ & 107.14€ \\
+    Dispositivo móvil Android & 845€ & 58.68€ \\
+    Tablet Android & 800€ & 55.55€ \\
+    Periféricos & 50€ & 4.16€ \\
+    \midrule
+    Total & 3495€ & 225.53€ \\
+}
+
+El coste amortizado se calcula con la siguiente fórmula:
+\begin{equation}
+    \text{Coste Amortizado} = \frac{\text{Coste Adquisición} - \text{Coste Final}}{\text{Vida Útil}} * \text{Meses  Proyecto}
+\end{equation}
+
+El uso que se le ha dado a cada componente \textit{hardware} varía en un función de la labor:
+\begin{itemize}
+    \item \textbf{Ordenador portátil:} su uso ha sido fundamental para el uso de herramientas y desarrollo del proyecto.
+    \item \textbf{Dispositivo móvil Android:} ha permitido realizar pruebas de depuración en un dispositivo físico.
+    \item \textbf{Tablet Android:} ha permitido realizar pruebas de depuración así como su uso de segunda pantalla para agilizar el desarrollo.
+    \item \textbf{Periféricos:} los días de desarrollo en casa han sido agilizados por el uso de un teclado y un ratón.
+\end{itemize}
+
+Por lo tanto, el coste total del \textit{hardware} ha sido de 225.53€.\\
+
+Por otra parte hay que tener en cuenta los costes extras, en este caso se tiene en cuenta el coste de \textit{Internet}, un servicio básico puede tener un coste de 30€ por mes. Teniendo en cuenta los meses de trabajo, se obtiene un gasto de 180€ en \textit{Internet}.
+
+Teniendo en cuenta todos los costes anteriores, obtenemos que el gasto total a cubrir del proyecto es de:
+\begin{equation}
+    6255.98\ \text{\euro} + 0\ \text{\euro} + 225.53\ \text{\euro} + 180\ \text{\euro}  = 6661.51\ \text{\euro}
+\end{equation}
 
 \subsection{Viabilidad legal}
+En este apartado del proyecto se contemplan todos los aspectos legales con el fin de cumplirlos, especialmente en aquellos relacionados con el tratamiento de datos y licencias de uso de software.
 
+\subsubsection{Protección de datos}
+Se tiene en cuenta que dentro de la aplicación se accede a información personal del usuario, como cursos, tareas, entregas o calificaciones entre otras, procedentes de su cuenta de Moodle. Por lo tanto, se deben tener en cuenta las siguientes consideraciones:
+\begin{itemize}
+    \item Se garantiza que se cumplen con los estándares establecidos en la Reglamento General de Protección de Datos, garantizando la confidencialidad, integridad y disponibilidad de los datos
+    \item Los datos se almacenan localmente en el dispositivo del usuario o en los servidores de Supabase que cumplen con las medidas de seguridad necesarias para la protección de datos
+\end{itemize}
 
+\subsubsection{Licencias de uso de software}
+En este caso se van a estudiar las licencias de uso de las distintas librerías y herramientas utilizadas en el desarrollo del proyecto.
+
+\tablaSmallSinColores
+{Licencias de uso de software}
+{lc}
+{licencias-uso}
+{
+    \textbf{Librería/Herramienta} & \textbf{Licencia} \\
+}
+{
+    calendar\_date\_picker2 & Apache-2.0\\
+    cupertino\_icons & MIT\\
+    Dart & BSD-3-Clause\\
+    Flutter SDK & BSD-3-Clause\\
+    flutter\_dotenv & MIT\\
+    flutter\_localizations & BSD-3-Clause\\
+    flutter\_slidable & MIT\\
+    flutter\_widget\_from\_html & MIT\\
+    http & BSD-3-Clause\\
+    intl & BSD-3-Clause\\
+    shared\_preferences & BSD-3-Clause\\
+    sliding\_up\_panel & unknown\\
+    supabase\_flutter & MIT\\
+    url\_launcher & BSD-3-Clause\\
+}
+
+A continuación se procede a explicar las licencias que aparecen en la tabla anterior:
+\begin{itemize}
+    \item \textbf{Apache-2.0:} requiere de la conversación del aviso de derechos de autor y el descargo de responsabilidad. No requiere de la redistribución del código fuente cuando se distribuyen versiones modificadas. Por lo tanto, permite usar para cualquier propósito el software, redistribuirlo, modificarlo y distribuir versiones modificadas \cite{licencia_apache}.
+    \item \textbf{BSD-3-Clause:} es una licencia de código abierto permisiva. Permite el libre uso, modificación y distribución del software \cite{licencia_bsd}. Requiere de algunas condiciones:
+        \begin{itemize}
+            \item Se debe de incluir un exención de responsabilidad en toda distribución
+            \item Se debe incluir un aviso de copyright
+        \end{itemize}
+    \item \textbf{MIT:} concede el permiso sin cargo a cualquier persona que obtenga una copia del software, para tratar el software sin restricción, incluyendo los derechos a usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar o vender copias \cite{licencia_mit}. Todo ello bajo unas condiciones:
+    El aviso de derechos de autor y el aviso de permiso se incluirán en todas las copias o partes sustanciales del software.
+\end{itemize}
+
+Por lo tanto, todas las herramientas empleadas en el proyecto  se han usado bajo licencias permisivas, lo que quiere decir que, se permite su uso dentro del marco legal de desarrollo de software.
+
+Por último, la licencia seleccionada para regular el uso, modificación y distribución de este proyecto es la licencia MIT.

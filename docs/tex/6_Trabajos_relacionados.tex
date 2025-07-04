@@ -1,3 +1,55 @@
 \capitulo{6}{Trabajos relacionados}
 
-Este apartado sería parecido a un estado del arte de una tesis o tesina. En un trabajo final grado no parece obligada su presencia, aunque se puede dejar a juicio del tutor el incluir un pequeño resumen comentado de los trabajos y proyectos ya realizados en el campo del proyecto en curso. 
+En este apartado se presentan distintos trabajos o proyectos similares a la aplicación desarrollada. El objetivo es realizar una breve comparativa de las opciones que ofrecen distintas alternativas en comparación a la desarrollada, con la finalidad de dar una visión al usuario de las opciones que puede utilizar en función de sus necesidades.
+
+\section{Aplicación móvil de Moodle}
+La aplicación oficial de Moodle ofrece todas las funcionalidades que ofrece la versión web, pero adaptada a dispositivos móviles \cite{related_moodle}. La aplicación de Moodle incorpora las siguientes funciones:
+\begin{itemize}
+    \item Acceso a los cursos.
+    \item Comunicación con otros participantes de los cursos.
+    \item Envío de tareas.
+    \item Seguimiento del progreso.
+    \item Realización de actividades.
+\end{itemize}
+
+\section{Cuckoo}
+Se trata de un proyecto desarrollado en Flutter cuya finalidad es ofrecer un rendimiento mejorado en comparación a la aplicación oficial de Moodle. Además, implementa funcionalidades que pueden resultar muy útiles, así como puede ser modificado para dar soporte a otras plataformas de Moodle \cite{related_cuckoo}.
+
+Algunas funcionalidades que ofrece son:
+\begin{itemize}
+    \item \textbf{Autenticación:} hace uso del mismo sistema de autenticación de Moodle con el fin de garantizar la seguridad de la información de los usuarios.
+    \item \textbf{Estado de finalización:} Cuckoo se sincroniza con Moodle para comprobar si los eventos con fecha limite están completados y, según corresponda, marcarlas en las lista de eventos de la propia aplicación.
+    \item \textbf{Eventos personalizados:} los usuarios pueden crear sus propios eventos y vincularlos con un curso en el que se encuentre inscrito.
+    \item \textbf{Acceso a los recursos de Moodle:} dispone de acceso a los contenidos descargables de los cursos, y permite descargarlos sin necesidad de acceder a Moodle.
+\end{itemize}
+
+\section{Trello}
+Trello es un software de gestión en linea, que hace uso de la metodología Kanban. Esta metodología se basa en el uso de tarjetas de trabajo en un tablero, similar a una línea de producción de tareas con un \textit{status} \cite{related_trello}.
+
+Trello sirve para organizar y gestionar tareas, ya sean proyectos o tareas del día, entre otros. Trello dispone de una gran cantidad de características que hacen de su uso una comodidad:
+\begin{itemize}
+    \item Sistema de trabajo colaborativo.
+    \item Asignación de tareas.
+    \item Organizar tareas por etiquetas.
+    \item Multiplataforma.
+    \item Fechas de vencimiento de tareas.
+    \item Personalización de tableros.
+\end{itemize}
+
+\section{Tabla de comparativas}
+A continuación se presenta una tabla comparando distintas funcionalidades de las aplicaciones presentadas anteriormente. El cometido de esta tabla es realizar una comparativa de los puntos fuertes de este proyecto, comparando las posibilidades del resto.
+
+\tablaSmallSinColores
+{Comparativa de puntos fuertes del proyecto con otros proyectos}
+{ccccc}
+{comparativa-proyectos}
+{
+    \textbf{Funcionalidad} \textbackslash \textbf{App} & \textbf{Moodle} & \textbf{Cuckoo} & \textbf{Trello} & \textbf{Proyecto} \\
+}
+{
+    Autenticación & X & X & X & X \\
+    Conexión Moodle & X & X & - & X \\
+    Diagrama Gantt & - & - & - & X \\
+    Filtro General & - & - & - & X \\
+    Tareas Personales & X & X & X & X \\
+}

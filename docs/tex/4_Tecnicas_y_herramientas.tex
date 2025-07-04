@@ -1,6 +1,100 @@
 \capitulo{4}{Técnicas y herramientas}
 
-Esta parte de la memoria tiene como objetivo presentar las técnicas metodológicas y las herramientas de desarrollo que se han utilizado para llevar a cabo el proyecto. Si se han estudiado diferentes alternativas de metodologías, herramientas, bibliotecas se puede hacer un resumen de los aspectos más destacados de cada alternativa, incluyendo comparativas entre las distintas opciones y una justificación de las elecciones realizadas. 
-No se pretende que este apartado se convierta en un capítulo de un libro dedicado a cada una de las alternativas, sino comentar los aspectos más destacados de cada opción, con un repaso somero a los fundamentos esenciales y referencias bibliográficas para que el lector pueda ampliar su conocimiento sobre el tema.
+En este apartado se procederá a explicar las distintas técnicas y herramientas que han sido empleadas durante el desarrollo del proyecto.
+
+\section{Metodología ágil}
+
+Para la gestión del proyecto se ha recurrido a la metodología ágil denominada Scrum. Este tipo de metodología se basa en un enfoque iterativo, mediante \textit{sprints} de intervalos de tiempos similares, en los que se realizan entregas rápidas y continuas del producto. La metodología Scrum permite incorporar cambios conforme finalizan los \textit{sprints}, ya que posteriormente de realizar la entrega, se llevan a cabo reuniones para definir los objetivos del próximo \textit{sprint}. Además, en estas reuniones se valora la calidad de la entrega, con el objetivo de realizar mejoras sobre la misma \cite{scrum}.
+
+En una metodología de este tipo, es necesario definir tareas que permitan al desarrollador comprender qué funcionalidades debe de implementar durante el \textit{sprint}. Todo ello, favorece la organización de las partes del proyecto y la priorización de la tareas a realizar.
+
+Para el seguimiento tanto de \textit{sprints} como de sus respectivas tareas, se ha empleado la herramienta web Zube. Esta herramienta permite definir los diferentes \textit{sprints} del proyecto, estableciendo el marco temporal de estos, asi como una descripción en formato texto. Otra funcionalidad que ofrece Zube, de cara a la organización de \textit{sprints}, es la creación de \textit{cards}, es decir, la definición de las tareas planteadas para el \textit{sprint}. Una ventaja destacable de Zube es la compatibilidad que ofrece con GitHub, ya que las tareas creadas pasarán a ser \textit{issues} en el repositorio del proyecto en GitHub.
+
+\section{Documentación}
+
+Como herramienta para la redacción de la documentación se ha optado por usar \LaTeX. Esta decisión se ve reforzada por la alta calidad en la elaboración de documentos técnicos, ya que \LaTeX\space ofrece un estilo elegante, así como una presentación más organizada. Además, \LaTeX\space aporta una gran flexibilidad para la creación de documentos de forma personalizada.
 
 
+\section{Control de versiones}
+
+Para el control de las versiones del proyecto, se han empleado dos herramientas que se utilizan de forma conjunta:
+
+\begin{itemize}
+    \item \textbf{GitHub:} Es una plataforma que permite alojar repositorios Git en la nube. Además, incorpora funcionalidades muy interesantes relacionadas con el desarrollo de proyectos, entre ellas destacan el historial de \textit{commits}, el control de ramas, control de \textit{issues}, integración aplicaciones de terceros, etc. Se ha elegido como herramienta principal por su comodidad y por la experiencia previa utilizándola los últimos años.
+    \item \textbf{Git Bash:} Es un herramienta que funciona como terminal de linea de comandos para manejar repositorios Git. Se ha elegido como herramienta por la experiencia en su uso, así como por su integración con el editor de código empleado.
+\end{itemize}
+
+\section{Editor de código}
+
+En cuanto al editor de código, existen diversas opciones disponibles. Sin embargo, para este proyecto se ha optado por Visual Studio Code, herramienta que he usado durante mis estudios universitarios. Este editor por la comodidad de uso, la gran cantidad de extensiones disponibles y su flexibilidad para ser configurado según las preferencias del programador.
+
+\section{Lenguaje de programación y \textit{framework}}
+
+\subsection{Dart}
+
+Dart es el lenguaje de programación elegido para este proyecto. Desarrollado por Google, se caracteriza por una sintaxis familiar para programar aplicaciones de forma rápida. Una de sus principales ventajas es que puede compilarse a código nativo, esto permite que se pueda ejecutar en diferentes entornos \cite{dart}.
+
+En este proyecto, la lógica de negocio, la comunicación con la API y el desarrollo del \textit{front-end} se llevan a cabo en Dart, además este proceso se facilita con las herramientas integradas en su SDK de Flutter.
+
+\subsection{Flutter}
+
+Flutter es un \textit{Software Development Kit} (SDK) creado por Google que permite crear interfaces gráficas a través de \textit{widgets} predefinidos o personalizados. Una gran ventaja de Flutter es su capacidad de lograr que una interfaz sea reactiva, además de adaptarla a cada plataforma.\cite{flutter}
+
+Además, Flutter introduce la funcionalidad \textit{hot-reload}, que refresca la interfaz de forma inmediata al realizar cambios en el código, acelerando así el proceso de desarrollo.
+
+\section{API de Moodle}
+La API de Servicios Web de Moodle permite que sistemas externos tengan acceso a funciones que son unicamente accesibles desde una plataforma Moodle. Estas funciones van desde servicio de autenticación hasta obtención de datos del usuario, entre decenas de operaciones. Para su uso en una aplicación externa, es necesaria la creación un token que permita acceder a los servicios de la API. Este token será usado en las llamadas a las funciones junto a otros parámetros requeridos. La respuesta a estas llamadas, se retorna en formato JSON con los datos solicitados \cite{api_moodle}.
+
+Las ventajas de usar la API de Moodle son:
+\begin{itemize}
+    \item Facilita la integración de los servicios de Moodle en aplicaciones móviles.
+    \item Permite conectar Moodle con otros LMS.
+\end{itemize}
+
+\section{Base de datos}
+En un principio se planteó utilizar \textit{Firebase}, sin embargo, la ausencia de algunos ficheros impidió la integración. Como alternativa se recurrió a \textit{Supabase}, una plataforma \textit{Backend as a Service} en la nube que permite crear y gestionar servicios \textit{backend}.
+En este proyecto se emplea unicamente la herramienta de gestión de base de datos, aprovechando sus ventajas:
+\begin{itemize}
+    \item Compatibilidad con SQL y políticas de seguridad a nivel de fila (RLS).
+    \item Sencilla integración con Flutter, ya que se dispone de una dependencia que facilita el proceso de gestión de datos.
+\end{itemize}
+
+\section{Prototipado}
+
+Para el prototipado del proyecto se barajaron varias alternativas como \textit{Pencil}, \textit{Canva}, \textit{Adobe XD}, etc. Al final se optó por usar \textit{Figma}, que permite crear prototipos interactivos y visualizarlos de forma sencilla en distintos dispositivos. Además, cuenta con el respaldo de una amplia comunidad que publica componentes y recursos que se pueden reutilizar en proyectos propios.
+
+\section{Emuladores para debug}
+
+Durante el desarrollo de la aplicación se emplearon diferentes emuladores para verificar como se comportaba la app en distintos entornos.
+
+\begin{itemize}
+    \item \textbf{Android Emulator:} Para la emulación de la app en entornos de dispositivos Android.
+    \item \textbf{Windows Emulator:} Para la emulación de la app en entornos Windows.
+\end{itemize}
+
+\section{Dependencias del proyecto}
+
+Para facilitar y agilizar el proceso de desarrollo se ha recurrido al uso \textit{dependencias}, estas permiten emplear funcionalidades desarrolladas por otro desarrolladores de la comunidad. Las dependencias empleadas son:
+
+\subsection{http}
+Dependencia que permite consumir recursos HTTP mediante peticiones \textit{GET} ó \textit{POST}. El uso de esta dependencia permite consumir las funciones de la API de Moodle para crear los modelos de la app \cite{http}.
+\subsection{shared\_preferences}
+Dependencia que permite almacenar de forma local datos en distintos tipos de formato \cite{shared_preferences}.
+\subsection{intl}
+Dependencia que contiene código para lidiar con mensajes internacionales, formateo de fechas y números, y otro tipo de incidencias de internacionalización \cite{intl}.
+\subsection{flutter\_localizations}
+Dependencia que facilita el soporte de internacionalización de la app. Permite traducir textos, adaptar formatos de fecha, hora y más en función de la localización del usuario \cite{flutter_localizations}.
+\subsection{supabase\_flutter}
+Dependencia que facilita la integración de Supabase en una app de Flutter. Supabase se usa de forma alternativa a Firebase y permite la implementación de bases de datos, autenticación de usuarios, almacenamiento de archivos, etc \cite{supabase}.
+\subsection{flutter\_dotenv}
+Dependencia empleada para configurar las variables globales de una app Flutter, mediante el uso de un archivo .env. Esto permite mantener la privacidad de las \textit{API KEYS} \cite{dot_env}.
+\subsection{url\_launcher}
+Dependencia que permite lanzar la página a una URL indicada, es decir, permite el correcto funcionamiento de urls. Ofrece soporte web, móvil y SMS \cite{url_launcher}.
+\subsection{flutter\_widget\_from\_html}
+Dependencia que permite renderizar el formato html y transformarlo en un widget que ofrece soporte \textit{hyperlink}, imagen, audio, video y otras cuantas etiquetas \cite{widget_from_html}.
+\subsection{sliding\_up\_panel}
+Dependencia que permite implementar en la aplicación un panel deslizante que se superpone al contenido principal y puede arrastrarse de forma vertical para mostrar su contenido \cite{sliding}.
+\subsection{calendar\_date\_picker2}
+Dependencia que implementa un calendario con una interfaz mucho más flexible y con opciones más avanzadas que \textit{DatePicker}. Permite escoger una fecha, varias fechas o rangos de fechas, mediante un calendario con una gran variedad de personalizaciones, como colores, formatos de fechas, estilos para los distintos días de la semana, etc \cite{calendar}.
+\subsection{flutter\_slidable}
+Dependencia que permite añadir a cualquier elemento la acción de deslizamiento horizontal para mostrar distintas acciones, como pueden ser \textit{editar} o \textit{eliminar} \cite{slidable}.
