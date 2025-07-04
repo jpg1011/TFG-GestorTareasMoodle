@@ -27,9 +27,24 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.4
+  rename_app: ^1.6.5
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
     - .env
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logoPlanLMS.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logoPlanLMS.png"
+  windows:
+    generate: true
+    image_path: "assets/logoPlanLMS.png"
+  macos:
+    generate: true
+    image_path: "assets/logoPlanLMS.png"
